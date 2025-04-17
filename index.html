@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gemini Chatbot Test Site</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+    <h1 class="text-2xl font-semibold mb-4 text-center">Gemini Chatbot Test</h1>
+    <div id="chat-container" class="space-y-4 mb-4 max-h-80 overflow-y-auto"></div>
+    <div class="flex">
+      <input id="user-input" type="text" class="flex-grow border rounded-l px-3 py-2 focus:outline-none" placeholder="Type your message...">
+      <button id="send-btn" class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // Replace with your Google Cloud API key
+    const API_KEY = '';
+
+    /**
+     * Call Google Gemini 2.0 Flash via REST API.
+     * See: https://cloud.google.com/vertex-ai/docs/generative-ai/reference/rest/v1/models/gemini-2.0-flash/generateContent
+     */
+    async function callGemini(promptText) {
+      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+      const body = {
+        contents: [
+          {
+            parts: [ { text: promptText } ]
+          }
+        ]
+      };
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        console.error('Gemini API error:', await res.text());
+        return 'Error: could not fetch response from Gemini.';
+      }
+      const data = await res.json();
+      // Extract generated text
+      const candidate = data.candidates?.[0];
+      console.log(candidate)
+      return candidate?.content?.parts[0]?.text || candidate?.output || 'No response from Gemini.';
+    }
+
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function appendMessage(sender, text) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = sender === 'user'
+        ? 'text-right text-gray-800'
+        : 'text-left text-gray-800';
+      msgDiv.textContent = text;
+      chatContainer.appendChild(msgDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    sendBtn.addEventListener('click', async () => {
+      const message = userInput.value.trim();
+      if (!message) return;
+      appendMessage('user', message);
+      userInput.value = '';
+      appendMessage('bot', '⏳ Thinking...');
+      try {
+        const reply = await callGemini(message);
+        // Remove the "Thinking..." placeholder
+        chatContainer.lastChild.remove();
+        appendMessage('bot', reply);
+      } catch (err) {
+        chatContainer.lastChild.remove();
+        appendMessage('bot', 'Error: ' + err.message);
+      }
+    });
+
+    userInput.addEventListener("keypress", function(event) {
+        // If the user presses the "Enter" key on the keyboard
+        if (event.key === "Enter") {
+            // Cancel the default action, if needed
+            event.preventDefault();
+            sendBtn.click();
+        }
+    });
+
+  </script>
+</body>
+</html>
+
