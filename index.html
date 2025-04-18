@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +7,30 @@
   <title>Gemini Chatbot Test Site</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Publisher Tag (ads test) -->
+  <script
+    async
+    src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    window.googletag = window.googletag || { cmd: [] };
+
+    googletag.cmd.push(() => {
+      // Define an ad slot for div with id "banner-ad".
+      // Enable the PubAdsService.
+      googletag
+          .defineSlot("/6355419/Travel", ["fluid"], "native-ad")
+          .addService(googletag.pubads())
+      // Configure page-level targeting.
+  googletag.pubads().setTargeting("interests", "basketball");
+
+  // Enable SRA and services.
+  googletag.pubads().enableSingleRequest();
+        googletag.enableServices();
+    });
+  </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
   <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
@@ -15,8 +40,22 @@
       <input id="user-input" type="text" class="flex-grow border rounded-l px-3 py-2 focus:outline-none" placeholder="Type your message...">
       <button id="send-btn" class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Send</button>
     </div>
+  
+
+    <!-- Ad banner for google, rendered later-->
+    <div id="native-ad" class="native-slot"></div>
+  
   </div>
 
+  <!--render banner ad-->
+  <script>
+    googletag.cmd.push(() => {
+      // Request and render an ad for the "banner-ad" slot.
+      googletag.display("native-ad");
+    });
+  </script>
+
+  <!--Call Gemini API-->
   <script>
     // Replace with your Google Cloud API key
     const API_KEY = '';
