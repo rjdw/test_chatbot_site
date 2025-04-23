@@ -11,6 +11,11 @@
     <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link rel="stylesheet" href="/assets/styles.css" />
 
+    <!-- tiny markdown renderer (3 kB gzipped) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- (optional) sanitiser -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.4/dist/purify.min.js"></script>
+
     <!-- Google Publisher Tag (ads test) -->
     <script
       async
@@ -37,21 +42,26 @@
   </head>
 
   <body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-xl">
       <h1 class="text-2xl font-semibold mb-4 text-center">
         Chatbot Test Project
       </h1>
+
+      <!-- CHAT AREA -->
       <div
         id="chat-container"
-        class="space-y-4 mb-4 max-h-80 overflow-y-auto"
+        class="flex flex-col space-y-3 mb-4 max-h-[70vh] overflow-y-auto pr-2"
       ></div>
+
+      <!-- INPUT BAR -->
       <div class="flex">
-        <input
+        <!-- >>> replaced <input> with <textarea> & added autosize classes -->
+        <textarea
           id="user-input"
-          type="text"
-          class="flex-grow border rounded-l px-3 py-2 focus:outline-none"
-          placeholder="Type your message..."
-        />
+          rows="1"
+          placeholder="Type your message…"
+          class="flex-grow resize-none overflow-hidden border rounded-l px-3 py-2 focus:outline-none max-h-40 overflow-y-auto"
+        ></textarea>
         <button
           id="send-btn"
           class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600"
@@ -60,8 +70,8 @@
         </button>
       </div>
 
-      <!-- Ad banner for google, rendered later-->
-      <div id="native-ad" class="native-slot"></div>
+      <!-- Ad banner -->
+      <div id="native-ad" class="native-slot mt-4"></div>
     </div>
 
     <!--render banner ad-->
@@ -130,40 +140,71 @@
       const userInput = document.getElementById("user-input");
       const sendBtn = document.getElementById("send-btn");
 
-      function appendMessage(sender, text) {
-        const msgDiv = document.createElement("div");
-        msgDiv.className =
-          sender === "user"
-            ? "text-right text-gray-800"
-            : "text-left text-gray-800";
-        msgDiv.textContent = text;
-        chatContainer.appendChild(msgDiv);
+      // --- auto‑grow textarea ---
+      const MAX_INPUT_PX = 160; // 10 rem – keep in sync with max-h-40
+
+      userInput.addEventListener("input", function () {
+        // this.style.height = "auto";
+        // this.style.height = this.scrollHeight + "px";
+        this.style.height = "auto"; // shrink if needed
+        const newHeight = Math.min(this.scrollHeight, MAX_INPUT_PX);
+        this.style.height = newHeight + "px";
+      });
+
+      // --- helper to inject user / bot bubbles ---
+      function appendMessage(sender, rawText) {
+        const wrapper = document.createElement("div");
+        wrapper.className =
+          sender === "user" ? "flex justify-end" : "flex justify-start";
+
+        const bubble = document.createElement("div");
+        bubble.className =
+          "chat-bubble " +
+          (sender === "user" ? "chat-bubble-user" : "chat-bubble-bot");
+        if (sender === "bot") {
+          // Render markdown → HTML, then (optionally) sanitise
+          let html = marked.parse(rawText).trim();
+
+          // If the whole block is a single <p>…</p>, remove it
+          if (html.startsWith("<p>") && html.endsWith("</p>")) {
+            html = html.slice(3, -4);
+          }
+          // bubble.innerHTML = html;                        // unsafe if Gemini ever emits raw HTML
+          bubble.innerHTML = DOMPurify.sanitize(html); // <‑‑ safer version
+        } else {
+          bubble.textContent = rawText;
+        }
+
+        wrapper.appendChild(bubble);
+        chatContainer.appendChild(wrapper);
         chatContainer.scrollTop = chatContainer.scrollHeight;
       }
 
-      sendBtn.addEventListener("click", async () => {
+      // --- send logic ---
+      async function handleSend() {
         const message = userInput.value.trim();
         if (!message) return;
+
         appendMessage("user", message);
         userInput.value = "";
-        appendMessage("bot", "⏳ Thinking...");
+        userInput.style.height = "auto";
+
+        appendMessage("bot", "⏳ Thinking…");
         try {
           const reply = await callGemini(message);
-          // Remove the "Thinking..." placeholder
-          chatContainer.lastChild.remove();
+          chatContainer.lastChild.remove(); // remove placeholder
           appendMessage("bot", reply);
         } catch (err) {
           chatContainer.lastChild.remove();
           appendMessage("bot", "Error: " + err.message);
         }
-      });
+      }
+      sendBtn.addEventListener("click", handleSend);
 
-      userInput.addEventListener("keypress", function (event) {
-        // If the user presses the "Enter" key on the keyboard
-        if (event.key === "Enter") {
-          // Cancel the default action, if needed
-          event.preventDefault();
-          sendBtn.click();
+      userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
         }
       });
     </script>

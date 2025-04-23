@@ -39,8 +39,8 @@ Add any other env‑vars you need; they are injected automatically when you `run
 ## 4 Run the dev server
 
 ```
-# build Tailwind once (or use --watch)
-npm run build:css
+# build Tailwind for every save
+npm run dev:css
 
 # start Pages dev (HTML, Functions, live‑reload)
 npx wrangler pages dev
