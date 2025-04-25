@@ -25,9 +25,12 @@ class GitterCommFloating extends HTMLElement {
     this.$input = this.shadowRoot.getElementById("input");
     this.$launcher = this.shadowRoot.getElementById("launcher");
 
-    this.$launcher.addEventListener("click", () =>
-      this.$panel.classList.toggle("open")
-    );
+    this.$launcher.addEventListener("click", () => {
+      this.$panel.classList.toggle("open");
+      if (this.$panel.classList.contains("open")) {
+        this.$input.focus();
+      }
+    });
 
     this.$input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {

@@ -6,7 +6,12 @@ module.exports = {
     "./src/**/*.js", // ← add JS that builds the DOM
     "./src/**/*.html", // ← template files loaded with ?raw
   ],
-  safelist: ["chat-bubble", "chat-bubble-user", "chat-bubble-bot"],
+  safelist: [
+    "chat-bubble",
+    "chat-bubble-user",
+    "chat-bubble-bot",
+    "first-line:indent-8",
+  ],
   theme: { extend: {} },
   plugins: [],
 };
