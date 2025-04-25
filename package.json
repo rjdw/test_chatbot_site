@@ -5,14 +5,20 @@
   "main": "index.js",
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
     "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.3.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --watch",
     "build": "npm run build:css",
-    "build:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --minify"
+    "dev:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --watch",
+    "dev:js": "vite build --watch --emptyOutDir",
+    "build:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --minify",
+    "build:js": "vite build",
+    "deploy": "npm run build:css && npm run build:js && wrangler pages deploy ./public",
+    "dev": "concurrently \"npm:dev:*\" \"wrangler pages dev ./public\""
   },
   "repository": {
     "type": "git",
@@ -24,5 +30,9 @@
   "bugs": {
     "url": "https://github.com/rjdw/test_chatbot_site/issues"
   },
-  "homepage": "https://github.com/rjdw/test_chatbot_site#readme"
+  "homepage": "https://github.com/rjdw/test_chatbot_site#readme",
+  "dependencies": {
+    "dompurify": "^3.2.5",
+    "marked": "^15.0.11"
+  }
 }

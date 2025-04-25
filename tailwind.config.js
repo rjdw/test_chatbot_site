@@ -1,11 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 module.exports = {
   content: [
-    "./public/**/*.html", // static pages
-    "./functions/**/*.js", // if you add any classes from Functions
+    "./public/**/*.html",
+    "./src/**/*.js", // ← add JS that builds the DOM
+    "./src/**/*.html", // ← template files loaded with ?raw
   ],
-  theme: {
-    extend: {},
-  },
+  safelist: ["chat-bubble", "chat-bubble-user", "chat-bubble-bot"],
+  theme: { extend: {} },
   plugins: [],
 };
