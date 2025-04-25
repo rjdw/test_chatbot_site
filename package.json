@@ -1,7 +1,7 @@
 {
   "name": "test_chatbot_site",
   "version": "1.0.0",
-  "description": "Static website with a gemini api call. Using for testing stuff.   Can run locally with something like `npx serve .`",
+  "description": "Static website for portfolio with gemini chat bot`",
   "main": "index.js",
   "devDependencies": {
     "autoprefixer": "^10.4.21",
@@ -15,7 +15,7 @@
     "build": "npm run build:css",
     "dev:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --watch",
     "dev:js": "vite build --watch --emptyOutDir",
-    "build:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --minify",
+    "build:css": "tailwindcss -i ./src/input.css -o ./src/styles.css --minify",
     "build:js": "vite build",
     "deploy": "npm run build:css && npm run build:js && wrangler pages deploy ./public",
     "dev": "concurrently \"npm:dev:*\" \"wrangler pages dev ./public\""
