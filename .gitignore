@@ -1,21 +1,39 @@
-# ── Node / npm ────────────────────────────────────────────
+# secrets / local env
+.dev.vars
+.env*
+
+# ─── Node & package managers ──────────────────────────
 node_modules/
 npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+package-lock.json
+.DS_Store
 
-# ── Tailwind build output ────────────────────────────────
-public/assets/          # compiled CSS (ignore if you build in CI)
-public/styles.css
+# ─── Vite build output ────────────────────────────────
+public/assets/*
+!public/assets/ads.txt        # keep static compliance files
+!public/assets/robots.txt
 
-# ── Local & secret files ─────────────────────────────────
-.dev.vars
+# If you sometimes bundle HTML into public/ as well, ignore hashed copies:
+public/index-*.html
+
+# ─── Tailwind/JIT cache ───────────────────────────────
+.tailwind-cache/
+.postcss-cache/
+
+# ─── Cloudflare Wrangler ──────────────────────────────
+.wrangler
+./.wrangler/**
 .env
-.wrangler/
+.env.*
 
-# ── Logs ─────────────────────────────────────────────────
-logs/
+# ─── IDE / OS clutter ─────────────────────────────────
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.settings/
 *.log
 
-# ── macOS junk ───────────────────────────────────────────
-.DS_Store
+

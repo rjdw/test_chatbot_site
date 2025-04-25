@@ -43,7 +43,7 @@ Add any other env‑vars you need; they are injected automatically when you `run
 npm run dev:css
 
 # start Pages dev (HTML, Functions, live‑reload)
-npx wrangler pages dev
+npx wrangler pages dev ./publicb
 ```
 
 Open http://localhost:8788 in your browser.

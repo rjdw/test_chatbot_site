@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <!--Adsense verification-->
+    <meta name="google-adsense-account" content="ca-pub-5642788581103145" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chatbot Test Project</title>
+    <!-- Tailwind CSS -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <!-- tiny markdown renderer (3 kB gzipped) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- (optional) sanitiser -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.4/dist/purify.min.js"></script>
+
+    <!-- Google Publisher Tag (ads test) -->
+    <script
+      async
+      src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      window.googletag = window.googletag || { cmd: [] };
+
+      googletag.cmd.push(() => {
+        // Define an ad slot for div with id "banner-ad".
+        // Enable the PubAdsService.
+        googletag
+          .defineSlot("/6355419/Travel", ["fluid"], "native-ad")
+          .addService(googletag.pubads());
+        // Configure page-level targeting.
+        googletag.pubads().setTargeting("interests", "basketball");
+
+        // Enable SRA and services.
+        googletag.pubads().enableSingleRequest();
+        googletag.enableServices();
+      });
+    </script>
+  </head>
+
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-xl">
+      <h1 class="text-2xl font-semibold mb-4 text-center">
+        Chatbot Test Project
+      </h1>
+
+      <!-- CHAT AREA -->
+      <div
+        id="chat-container"
+        class="flex flex-col space-y-3 mb-4 max-h-[70vh] overflow-y-auto pr-2"
+      ></div>
+
+      <!-- INPUT BAR -->
+      <div class="flex">
+        <!-- >>> replaced <input> with <textarea> & added autosize classes -->
+        <textarea
+          id="user-input"
+          rows="1"
+          placeholder="Type your message…"
+          class="flex-grow resize-none overflow-hidden border rounded-l px-3 py-2 focus:outline-none max-h-40 overflow-y-auto"
+        ></textarea>
+        <button
+          id="send-btn"
+          class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600"
+        >
+          Send
+        </button>
+      </div>
+
+      <!-- Ad banner -->
+      <div id="native-ad" class="native-slot mt-4"></div>
+    </div>
+
+    <!--render banner ad-->
+    <script>
+      googletag.cmd.push(() => {
+        // Request and render an ad for the "banner-ad" slot.
+        googletag.display("native-ad");
+      });
+    </script>
+
+    <!--Call Gemini API-->
+    <script>
+      // Replace with your Google Cloud API key
+      const API_KEY = "";
+
+      async function callGemini(promptText) {
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: promptText }),
+        });
+
+        if (!res.ok) return "Error calling Gemini";
+
+        const data = await res.json();
+        return (
+          data.candidates?.[0]?.content?.parts?.[0]?.text ??
+          data.candidates?.[0]?.output ??
+          "No reply"
+        );
+      }
+      /**
+       * Call Google Gemini 2.0 Flash via REST API.
+       * See: https://cloud.google.com/vertex-ai/docs/generative-ai/reference/rest/v1/models/gemini-2.0-flash/generateContent
+       */
+      // async function callGemini(promptText) {
+      //   const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+      //   const body = {
+      //     contents: [
+      //       {
+      //         parts: [{ text: promptText }],
+      //       },
+      //     ],
+      //   };
+      //   const res = await fetch(url, {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(body),
+      //   });
+      //   if (!res.ok) {
+      //     console.error("Gemini API error:", await res.text());
+      //     return "Error: could not fetch response from Gemini.";
+      //   }
+      //   const data = await res.json();
+      //   // Extract generated text
+      //   const candidate = data.candidates?.[0];
+      //   console.log(candidate);
+      //   return (
+      //     candidate?.content?.parts[0]?.text ||
+      //     candidate?.output ||
+      //     "No response from Gemini."
+      //   );
+      // }
+
+      const chatContainer = document.getElementById("chat-container");
+      const userInput = document.getElementById("user-input");
+      const sendBtn = document.getElementById("send-btn");
+
+      // --- auto‑grow textarea ---
+      const MAX_INPUT_PX = 160; // 10 rem – keep in sync with max-h-40
+
+      userInput.addEventListener("input", function () {
+        // this.style.height = "auto";
+        // this.style.height = this.scrollHeight + "px";
+        this.style.height = "auto"; // shrink if needed
+        const newHeight = Math.min(this.scrollHeight, MAX_INPUT_PX);
+        this.style.height = newHeight + "px";
+      });
+
+      // --- helper to inject user / bot bubbles ---
+      function appendMessage(sender, rawText) {
+        const wrapper = document.createElement("div");
+        wrapper.className =
+          sender === "user" ? "flex justify-end" : "flex justify-start";
+
+        const bubble = document.createElement("div");
+        bubble.className =
+          "chat-bubble " +
+          (sender === "user" ? "chat-bubble-user" : "chat-bubble-bot");
+        if (sender === "bot") {
+          // Render markdown → HTML, then (optionally) sanitise
+          let html = marked.parse(rawText).trim();
+
+          // If the whole block is a single <p>…</p>, remove it
+          if (html.startsWith("<p>") && html.endsWith("</p>")) {
+            html = html.slice(3, -4);
+          }
+          // bubble.innerHTML = html;                        // unsafe if Gemini ever emits raw HTML
+          bubble.innerHTML = DOMPurify.sanitize(html); // <‑‑ safer version
+        } else {
+          bubble.textContent = rawText;
+        }
+
+        wrapper.appendChild(bubble);
+        chatContainer.appendChild(wrapper);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      // --- send logic ---
+      async function handleSend() {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        appendMessage("user", message);
+        userInput.value = "";
+        userInput.style.height = "auto";
+
+        appendMessage("bot", "⏳ Thinking…");
+        try {
+          const reply = await callGemini(message);
+          chatContainer.lastChild.remove(); // remove placeholder
+          appendMessage("bot", reply);
+        } catch (err) {
+          chatContainer.lastChild.remove();
+          appendMessage("bot", "Error: " + err.message);
+        }
+      }
+      sendBtn.addEventListener("click", handleSend);
+
+      userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+    </script>
+  </body>
+</html>

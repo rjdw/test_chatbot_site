@@ -1,0 +1,73 @@
+<style>
+  :host {
+    all: initial;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  #launcher {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 9999px;
+    background: #3b82f6;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+  }
+  #panel {
+    position: fixed;
+    right: 1rem;
+    bottom: 4.5rem;
+    width: 360px;
+    max-height: 75vh;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+    display: none;
+    flex-direction: column;
+  }
+  #panel.open {
+    display: flex;
+  }
+  #chat {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  textarea {
+    resize: none;
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    max-height: 160px;
+    overflow-y: auto;
+    border-bottom-left-radius: 0.5rem;
+  }
+  button#send {
+    background: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+</style>
+
+<div id="launcher">💬</div>
+
+<div id="panel">
+  <div id="chat"></div>
+
+  <form id="inputbar" style="display: flex; border-top: 1px solid #e5e7eb">
+    <textarea rows="1" id="input" placeholder="Type…" required></textarea>
+    <button id="send" type="submit">Send</button>
+  </form>
+</div>
