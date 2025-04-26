@@ -12,13 +12,13 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run build:css",
+    "build": "npm run build:css && npm run build:js ",
     "dev:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --watch",
     "dev:js": "vite build --watch --emptyOutDir",
     "build:css": "tailwindcss -i ./src/input.css -o ./src/styles.css --minify",
     "build:js": "vite build",
     "deploy": "npm run build:css && npm run build:js && wrangler pages deploy ./public",
-    "dev": "concurrently \"npm:dev:*\" \"wrangler pages dev ./public\""
+    "dev": "npm run build:css && concurrently \"npm:dev:*\" \"wrangler pages dev ./public\""
   },
   "repository": {
     "type": "git",
