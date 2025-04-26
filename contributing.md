@@ -22,7 +22,7 @@
 ```bash
 git clone git@github.com:rjdw/test_chatbot_site.git
 cd chatbot-site
-npm ci                    # installs Tailwind, PostCSS, Wrangler, etc.
+npm ci                    # installs deps
 ```
 
 ## 3 Environment variables for local dev
@@ -31,7 +31,7 @@ Create a .dev.vars file in the repo root (ignored by Git):
 
 ```bash
 # .dev.vars
-GEMINI_API_KEY="sk-…"
+echo "GEMINI_API_KEY=<your-key>" > .dev.vars
 ```
 
 Add any other env‑vars you need; they are injected automatically when you `run wrangler pages dev`
@@ -39,42 +39,62 @@ Add any other env‑vars you need; they are injected automatically when you `run
 ## 4 Run the dev server
 
 ```
-# build Tailwind for every save
-npm run dev:css
-
-# start Pages dev (HTML, Functions, live‑reload)
-npx wrangler pages dev ./publicb
+# 4 Launch everything (pages + Tailwind + Vite)
+npm run dev           # → http://localhost:8788
 ```
 
 Open http://localhost:8788 in your browser.
+Need to reload site every time you edit. Don't need to rerun dev build.  
+Might need to turn off browser cache depending on your edits.
 
 ## 5 Building for production
 
 ```
-npm run build   # Generates public/assets/styles.css
+npm run build   # Generates css and js builds
 ```
 
 All distributable files end up in `public/`.
-That folder is what we deploy.
-Please don't push compiled code without plan.
+That folder is what we deploy.  
+**Please don't push compiled code without plan.**
 
 ## 6 Deployment options
 
-A — GitHub CI (preferred)
-Every merge/push to `main` triggers the Pages build & deploy pipeline.
-Build command: `npm run build`   Output directory: `public/`  
-Will set this up with Cloudflare workers. Right now not working.
+### Preferred
 
+We'll figure out Cloudflare perms later.  
+For now,
+
+```bash
+npm run build
+git checkout -b feat/<your-branch>
+git add .
+git commit -m "feat: concise description"
+git push --set-upstream origin feat/<your-branch>
+```
+
+Then I'll deploy with
+
+```bash
+npm run deploy
+```
+
+Without Cloudflare login perms you can't deploy.
+
+### Coming soon
+
+GitHub CI:
+
+Every merge/push to `main` triggers the Pages build & deploy pipeline  
 Create a PR, get it reviewed, merge → Pages redeploys automatically.
 
-B — Manual Wrangler deploy
+**or**
+
+Manual Wrangler deployment  
 Use this when you need an emergency hot‑fix without a full CI round.
 
 ```
-npm run build           # step 1 – compile assets
 wrangler login          # first time only, opens browser
-npx wrangler pages deploy ./public \
- --project-name chatbot-site # step 2 – upload
+npm run deploy
 ```
 
 **Requirements**
@@ -94,10 +114,16 @@ This is for Google AdSense. Don't mess with this for now. Also the `<meta>` tags
 
 ## 8 Adding new env‑vars
 
+Just talk if you need production env secret vars.
+
 ```
-# once per variable – production
+# for production use GUI or
 wrangler pages secret put YOUR_VAR --project-name chatbot-site
+```
+
+```
 # for local dev add it to .dev.vars
+echo VAR_NAME=<var> > .dev.vars
 ```
 
 ## 9 Code style & linting
