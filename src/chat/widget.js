@@ -1,6 +1,7 @@
 import { callGemini } from "../api/gemini.js";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import axios from 'axios';
 
 class GitterCommFloating extends HTMLElement {
   constructor() {
@@ -42,6 +43,16 @@ class GitterCommFloating extends HTMLElement {
     this.shadowRoot
       .getElementById("inputbar")
       .addEventListener("submit", (e) => this.handleSend(e));
+
+    this.$toggle = this.shadowRoot.getElementById("toggleSwitch");
+    this.$toggleLabel = this.shadowRoot.getElementById("toggleLabel");
+    
+    this.$toggle.addEventListener("change", () => {
+      this.on = this.$toggle.checked;
+      this.$toggleLabel.textContent = this.on ? "Discrete ON" : "Discrete OFF";
+      console.log("Toggle is now:", this.on);
+    });
+    
   }
 
   autosize() {
@@ -86,9 +97,20 @@ class GitterCommFloating extends HTMLElement {
     const placeholder = this.$chat.lastChild;
 
     try {
-      const reply = await callGemini(msg);
+      const request = await axios.get('http://localhost:5000/api/promptedMsg', {
+        params: {
+          user_input: msg
+        }
+      });
+
+      const prompted_msg = request.data;
+      const reply = await callGemini(prompted_msg);
       placeholder.remove();
-      this.appendMessage("bot", reply);
+
+      const replyPrefix = this.on ? "" : `<div class="sponsored">Sponsored</div>`;
+      const finalReply = replyPrefix + `<div>${reply}</div>`;
+      this.appendMessage("bot", finalReply);      
+
     } catch (err) {
       placeholder.remove();
       this.appendMessage("bot", "Error: " + err.message);
