@@ -44,14 +44,17 @@ class GitterCommFloating extends HTMLElement {
       .getElementById("inputbar")
       .addEventListener("submit", (e) => this.handleSend(e));
 
+    this.toggleOn = false;
     this.$toggle = this.shadowRoot.getElementById("toggleSwitch");
     this.$toggleLabel = this.shadowRoot.getElementById("toggleLabel");
     
     this.$toggle.addEventListener("change", () => {
-      this.on = this.$toggle.checked;
+      this.toggleOn = this.$toggle.checked;
       this.$toggleLabel.textContent = this.on ? "Discrete ON" : "Discrete OFF";
       console.log("Toggle is now:", this.on);
     });
+
+    this.msg_counter = 0;
     
   }
 
@@ -99,15 +102,28 @@ class GitterCommFloating extends HTMLElement {
     try {
       const request = await axios.get('http://localhost:5000/api/promptedMsg', {
         params: {
-          user_input: msg
+          user_input: msg,
+          msg_counter: this.msg_counter
         }
       });
 
-      const prompted_msg = request.data;
+      const prompted_msg = request.data.prompt;
+      const promptType = request.data.promptType;
+
+      if (promptType == "clean") {
+        this.msg_counter += 1;
+      } else {
+        this.msg_counter = 0;
+      }
+      console.log(this.msg_counter, promptType);
       const reply = await callGemini(prompted_msg);
       placeholder.remove();
 
-      const replyPrefix = this.on ? "" : `<div class="sponsored">Sponsored</div>`;
+      let replyPrefix = ""
+      if (this.toggleOn == false && promptType == "injected") {
+        replyPrefix = `<div><p>Sponsored</p><br></div>`
+      }
+
       const finalReply = replyPrefix + `<div>${reply}</div>`;
       this.appendMessage("bot", finalReply);      
 
