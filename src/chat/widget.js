@@ -100,37 +100,46 @@ class GitterCommFloating extends HTMLElement {
     this.appendMessage("bot", "⏳ …");
     const placeholder = this.$chat.lastChild;
 
+    // try {
+    //   const request = await axios.get("http://localhost:5000/api/promptedMsg", {
+    //     params: {
+    //       user_input: msg,
+    //       msg_counter: this.msg_counter,
+    //       discrete: this.toggleOn,
+    //     },
+    //   });
+
+    //   const prompted_msg = request.data.prompt;
+    //   const promptType = request.data.promptType;
+
+    //   if (promptType == "clean") {
+    //     this.msg_counter += 1;
+    //   } else {
+    //     this.msg_counter = 0;
+    //   }
+    //   console.log(this.msg_counter, promptType);
+    //   const reply = await callGemini(prompted_msg);
+    //   placeholder.remove();
+
+    //   // let replyPrefix = "";
+    //   // if (this.toggleOn == false && promptType == "injected") {
+    //   //   replyPrefix = `<div><p>Sponsored</p><br></div>`;
+    //   // }
+
+    //   // const finalReply = replyPrefix + `<div>${reply}</div>`;
+
+    //   const finalReply = `<div>${reply}</div>`;
+
+    //   this.appendMessage("bot", finalReply);
+    // } catch (err) {
+    //   placeholder.remove();
+    //   this.appendMessage("bot", "Error: " + err.message);
+    // }
+
     try {
-      const request = await axios.get("http://localhost:5000/api/promptedMsg", {
-        params: {
-          user_input: msg,
-          msg_counter: this.msg_counter,
-          discrete: this.toggleOn,
-        },
-      });
-
-      const prompted_msg = request.data.prompt;
-      const promptType = request.data.promptType;
-
-      if (promptType == "clean") {
-        this.msg_counter += 1;
-      } else {
-        this.msg_counter = 0;
-      }
-      console.log(this.msg_counter, promptType);
-      const reply = await callGemini(prompted_msg);
+      const reply = await callGemini(msg);
       placeholder.remove();
-
-      // let replyPrefix = "";
-      // if (this.toggleOn == false && promptType == "injected") {
-      //   replyPrefix = `<div><p>Sponsored</p><br></div>`;
-      // }
-
-      // const finalReply = replyPrefix + `<div>${reply}</div>`;
-
-      const finalReply = `<div>${reply}</div>`;
-
-      this.appendMessage("bot", finalReply);
+      this.appendMessage("bot", reply);
     } catch (err) {
       placeholder.remove();
       this.appendMessage("bot", "Error: " + err.message);
