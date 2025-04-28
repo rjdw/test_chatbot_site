@@ -1,7 +1,7 @@
 import { callGemini } from "../api/gemini.js";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import axios from 'axios';
+import axios from "axios";
 
 class GitterCommFloating extends HTMLElement {
   constructor() {
@@ -47,15 +47,16 @@ class GitterCommFloating extends HTMLElement {
     this.toggleOn = false;
     this.$toggle = this.shadowRoot.getElementById("toggleSwitch");
     this.$toggleLabel = this.shadowRoot.getElementById("toggleLabel");
-    
+
     this.$toggle.addEventListener("change", () => {
       this.toggleOn = this.$toggle.checked;
-      this.$toggleLabel.textContent = this.on ? "Discrete ON" : "Discrete OFF";
-      console.log("Toggle is now:", this.on);
+      this.$toggleLabel.textContent = this.toggleOn
+        ? "Discrete ON"
+        : "Discrete OFF";
+      console.log("Toggle is now:", this.toggleOn);
     });
 
     this.msg_counter = 0;
-    
   }
 
   autosize() {
@@ -100,11 +101,12 @@ class GitterCommFloating extends HTMLElement {
     const placeholder = this.$chat.lastChild;
 
     try {
-      const request = await axios.get('http://localhost:5000/api/promptedMsg', {
+      const request = await axios.get("http://localhost:5000/api/promptedMsg", {
         params: {
           user_input: msg,
-          msg_counter: this.msg_counter
-        }
+          msg_counter: this.msg_counter,
+          discrete: this.toggleOn,
+        },
       });
 
       const prompted_msg = request.data.prompt;
@@ -119,14 +121,16 @@ class GitterCommFloating extends HTMLElement {
       const reply = await callGemini(prompted_msg);
       placeholder.remove();
 
-      let replyPrefix = ""
-      if (this.toggleOn == false && promptType == "injected") {
-        replyPrefix = `<div><p>Sponsored</p><br></div>`
-      }
+      // let replyPrefix = "";
+      // if (this.toggleOn == false && promptType == "injected") {
+      //   replyPrefix = `<div><p>Sponsored</p><br></div>`;
+      // }
 
-      const finalReply = replyPrefix + `<div>${reply}</div>`;
-      this.appendMessage("bot", finalReply);      
+      // const finalReply = replyPrefix + `<div>${reply}</div>`;
 
+      const finalReply = `<div>${reply}</div>`;
+
+      this.appendMessage("bot", finalReply);
     } catch (err) {
       placeholder.remove();
       this.appendMessage("bot", "Error: " + err.message);
