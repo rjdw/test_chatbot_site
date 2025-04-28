@@ -8,7 +8,8 @@
     "concurrently": "^9.1.2",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
-    "vite": "^6.3.3"
+    "vite": "^6.3.3",
+    "wrangler": "^4.13.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -32,6 +33,7 @@
   },
   "homepage": "https://github.com/rjdw/test_chatbot_site#readme",
   "dependencies": {
+    "axios": "^1.9.0",
     "dompurify": "^3.2.5",
     "marked": "^15.0.11"
   }

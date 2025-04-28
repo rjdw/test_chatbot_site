@@ -15,4 +15,5 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: { include: ["axios"] }, // 👈 forces an ESM pre-bundle
 });
