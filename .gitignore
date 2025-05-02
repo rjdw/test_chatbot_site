@@ -1,3 +1,6 @@
+# testing
+test/
+
 # secrets / local env
 .dev.vars
 .env*
