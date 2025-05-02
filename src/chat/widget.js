@@ -108,8 +108,9 @@ class GitterCommFloating extends HTMLElement {
 
     try {
       const request = await axios.get(
-        "https://llads-rag-server.onrender.com/api/promptedMsg",
+        // "https://llads-rag-server.onrender.com/api/promptedMsg",
         // "http://localhost:5000/api/promptedMsg",
+        "https://llads-rag-server-late-field-2621.fly.dev/api/promptedMsg",
         {
           params: {
             user_input: msg,
