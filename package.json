@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Static website for portfolio with gemini chat bot`",
   "main": "index.js",
+  "type": "module",
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.18",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.1.2",
     "fast-glob": "^3.3.3",
@@ -14,13 +16,15 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run build:css && npm run build:js ",
+    "build:posts": "node scripts/build-posts.js",
+    "build": "npm run build:posts && npm run build:css && npm run build:js",
     "dev:css": "tailwindcss -i ./src/input.css -o ./public/assets/styles.css --watch",
     "dev:js": "vite build --watch --emptyOutDir",
+    "dev:posts": "node scripts/build-posts.js --watch",
     "build:css": "tailwindcss -i ./src/input.css -o ./src/styles.css --minify",
     "build:js": "vite build",
-    "deploy": "npm run build:css && npm run build:js && wrangler pages deploy ./public",
-    "dev": "npm run build:css && concurrently \"npm:dev:*\" \"wrangler pages dev ./public\""
+    "deploy": "npm run build && wrangler pages deploy ./public",
+    "dev": "npm run build:posts && npm run build:css && concurrently \"npm:dev:*\" \"wrangler pages dev ./public\""
   },
   "repository": {
     "type": "git",

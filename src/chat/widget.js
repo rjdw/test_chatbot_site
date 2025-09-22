@@ -1,3 +1,5 @@
+/* gc-chat.js — full copy-paste */
+
 import { callGemini } from "../api/gemini.js";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -5,34 +7,33 @@ import axios from "axios";
 
 class GitterCommFloating extends HTMLElement {
   constructor() {
-    // super();
-    // this.attachShadow({ mode: "open" }).appendChild(
-    //   tmpl.content.cloneNode(true)
-    // );
     super();
+
+    /* --- template ------------------------------------------------------- */
     const t = document
       .getElementById("gc-chat-template")
       .content.cloneNode(true);
     this.attachShadow({ mode: "open" }).appendChild(t);
 
-    // NEW: link Tailwind stylesheet into the shadow root
+    /* load Tailwind inside the shadow-root */
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/assets/styles.css"; // path relative to site root
-    this.shadowRoot.prepend(link); // make sure it loads first
+    link.href = "/assets/styles.css";
+    this.shadowRoot.prepend(link);
 
+    /* short-cuts --------------------------------------------------------- */
     this.$panel = this.shadowRoot.getElementById("panel");
     this.$chat = this.shadowRoot.getElementById("chat");
     this.$input = this.shadowRoot.getElementById("input");
     this.$launcher = this.shadowRoot.getElementById("launcher");
 
+    /* launcher toggles the chat window */
     this.$launcher.addEventListener("click", () => {
       this.$panel.classList.toggle("open");
-      if (this.$panel.classList.contains("open")) {
-        this.$input.focus();
-      }
+      if (this.$panel.classList.contains("open")) this.$input.focus();
     });
 
+    /* send on Enter */
     this.$input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -40,59 +41,66 @@ class GitterCommFloating extends HTMLElement {
       }
     });
 
+    /* send on explicit form submit */
     this.shadowRoot
       .getElementById("inputbar")
       .addEventListener("submit", (e) => this.handleSend(e));
 
+    /* discrete-mode toggle ------------------------------------------------ */
     this.toggleOn = false;
     this.$toggle = this.shadowRoot.getElementById("toggleSwitch");
     this.$toggleLabel = this.shadowRoot.getElementById("toggleLabel");
-
     this.$toggle.addEventListener("change", () => {
       this.toggleOn = this.$toggle.checked;
       this.$toggleLabel.textContent = this.toggleOn
         ? "Discrete ON"
         : "Discrete OFF";
-      console.log("Toggle is now:", this.toggleOn);
     });
 
     this.msg_counter = 0;
   }
 
+  /* auto-grow textarea */
   autosize() {
     this.$input.style.height = "auto";
     this.$input.style.height = Math.min(this.$input.scrollHeight, 160) + "px";
   }
 
+  /* helper to append chat bubbles --------------------------------------- */
   appendMessage(sender, text) {
     const row = document.createElement("div");
     row.className =
       sender === "user" ? "flex justify-end" : "flex justify-start";
+
     const bubble = document.createElement("div");
     bubble.className =
       "chat-bubble " +
       (sender === "user" ? "chat-bubble-user" : "chat-bubble-bot");
+
     if (sender === "bot") {
       let html = marked.parse(text).trim();
-
-      // If the whole block is a single <p>…</p>, remove it
-      if (html.startsWith("<p>") && html.endsWith("</p>")) {
+      if (html.startsWith("<p>") && html.endsWith("</p>"))
         html = html.slice(3, -4);
-      }
-      // bubble.innerHTML = html;                        // unsafe if Gemini ever emits raw HTML
-      bubble.innerHTML = DOMPurify.sanitize(html); // <‑‑ safer version
+
+      /* allow the ad’s <a onclick=...> to survive sanitising */
+      bubble.innerHTML = DOMPurify.sanitize(html, {
+        ADD_ATTR: ["onclick"],
+      });
     } else {
       bubble.textContent = text;
     }
+
     row.appendChild(bubble);
     this.$chat.appendChild(row);
     this.$chat.scrollTop = this.$chat.scrollHeight;
   }
 
+  /* main send-handler ---------------------------------------------------- */
   async handleSend(e) {
     e.preventDefault();
     const msg = this.$input.value.trim();
     if (!msg) return;
+
     this.appendMessage("user", msg);
     this.$input.value = "";
     this.autosize();
@@ -100,17 +108,12 @@ class GitterCommFloating extends HTMLElement {
     this.appendMessage("bot", "⏳ …");
     const placeholder = this.$chat.lastChild;
 
-    // console.log({
-    //   user_input: msg,
-    //   msg_counter: this.msg_counter,
-    //   discrete: this.toggleOn ? "true" : "false",
-    // });
-
     try {
-      const request = await axios.get(
+      /* ---- backend call ------------------------------------------------ */
+      const req = await axios.get(
         // "https://llads-rag-server.onrender.com/api/promptedMsg",
-        // "http://localhost:5000/api/promptedMsg",
-        "https://llads-rag-server-late-field-2621.fly.dev/api/promptedMsg",
+        "http://localhost:5000/api/promptedMsg",
+        // "https://llads-rag-server-late-field-2621.fly.dev/api/promptedMsg",
         {
           params: {
             user_input: msg,
@@ -120,43 +123,40 @@ class GitterCommFloating extends HTMLElement {
         }
       );
 
-      const prompted_msg = request.data.prompt;
-      const promptType = request.data.promptType;
+      const prompted_msg = req.data.prompt;
+      const promptType = req.data.promptType;
+      const adHTML = req.data.html || "";
 
-      if (promptType == "clean") {
-        this.msg_counter += 1;
-      } else {
-        this.msg_counter = 0;
-      }
-      console.log(this.msg_counter, promptType);
+      this.msg_counter = promptType === "clean" ? this.msg_counter + 1 : 0;
+
+      /* ---- call Gemini + render --------------------------------------- */
       const reply = await callGemini(prompted_msg);
       placeholder.remove();
 
-      // let replyPrefix = "";
-      // if (this.toggleOn == false && promptType == "injected") {
-      //   replyPrefix = `<div><p>Sponsored</p><br></div>`;
-      // }
+      this.appendMessage("bot", `<div>${reply}</div>`);
 
-      // const finalReply = replyPrefix + `<div>${reply}</div>`;
+      /* ---- render linked-ad bubble if provided ------------------------ */
+      if (adHTML && !this.toggleOn) {
+        // keep hidden in discrete mode
+        const adRow = document.createElement("div");
+        adRow.className = "flex justify-start";
 
-      const finalReply = `<div>${reply}</div>`;
-
-      this.appendMessage("bot", finalReply);
+        const adBubble = document.createElement("div");
+        adBubble.className =
+          "chat-bubble chat-bubble-bot bg-yellow-50 text-black";
+        adBubble.innerHTML = DOMPurify.sanitize(adHTML, {
+          ADD_ATTR: ["onclick", "target"],
+        });
+        adRow.appendChild(adBubble);
+        this.$chat.appendChild(adRow);
+        this.$chat.scrollTop = this.$chat.scrollHeight;
+      }
     } catch (err) {
       placeholder.remove();
       this.appendMessage("bot", "Error: " + err.message);
     }
 
-    // try {
-    //   const reply = await callGemini(msg);
-    //   placeholder.remove();
-    //   this.appendMessage("bot", reply);
-    // } catch (err) {
-    //   placeholder.remove();
-    //   this.appendMessage("bot", "Error: " + err.message);
-    // }
-
-    // load ad only after first real content
+    /* example: display a real AdSense slot once chat is active ---------- */
     if (!window.adsLoaded) {
       googletag.cmd.push(() => googletag.display("native-ad"));
       window.adsLoaded = true;
@@ -169,3 +169,4 @@ class GitterCommFloating extends HTMLElement {
 }
 
 customElements.define("gc-chat", GitterCommFloating);
+export default GitterCommFloating;
