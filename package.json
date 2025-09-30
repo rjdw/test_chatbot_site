@@ -23,7 +23,7 @@
     "dev:posts": "node scripts/build-posts.js --watch",
     "build:css": "tailwindcss -i ./src/input.css -o ./src/styles.css --minify",
     "build:js": "vite build",
-    "deploy": "npm run build && wrangler pages deploy ./public",
+    "deploy": "npm run build && wrangler pages deploy ./public --project-name chatbot-site --branch main",
     "dev": "npm run build:posts && npm run build:css && concurrently \"npm:dev:*\" \"wrangler pages dev ./public\""
   },
   "repository": {
