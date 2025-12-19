@@ -82,9 +82,9 @@ class GitterCommFloating extends HTMLElement {
       if (html.startsWith("<p>") && html.endsWith("</p>"))
         html = html.slice(3, -4);
 
-      /* allow the ad’s <a onclick=...> to survive sanitising */
+      /* allow the ad's <a onclick=...> and target="_blank" to survive sanitising */
       bubble.innerHTML = DOMPurify.sanitize(html, {
-        ADD_ATTR: ["onclick"],
+        ADD_ATTR: ["onclick", "target"],
       });
     } else {
       bubble.textContent = text;
@@ -108,8 +108,15 @@ class GitterCommFloating extends HTMLElement {
     this.appendMessage("bot", "⏳ …");
     const placeholder = this.$chat.lastChild;
 
+    // CHATBOT DISABLED - Always return the same message
+    setTimeout(() => {
+      placeholder.remove();
+      this.appendMessage("bot", 'I\'ve disabled this. Go to <a href="https://cladlabs.ai" target="_blank">cladlabs.ai</a>');
+    }, 500);
+
+    /* ORIGINAL CHATBOT LOGIC - COMMENTED OUT
     try {
-      /* ---- backend call ------------------------------------------------ */
+      // ---- backend call ------------------------------------------------
       const req = await axios.get(
         // "https://llads-rag-server.onrender.com/api/promptedMsg",
         "http://localhost:5000/api/promptedMsg",
@@ -129,13 +136,13 @@ class GitterCommFloating extends HTMLElement {
 
       this.msg_counter = promptType === "clean" ? this.msg_counter + 1 : 0;
 
-      /* ---- call Gemini + render --------------------------------------- */
+      // ---- call Gemini + render ---------------------------------------
       const reply = await callGemini(prompted_msg);
       placeholder.remove();
 
       this.appendMessage("bot", `<div>${reply}</div>`);
 
-      /* ---- render linked-ad bubble if provided ------------------------ */
+      // ---- render linked-ad bubble if provided ------------------------
       if (adHTML && !this.toggleOn) {
         // keep hidden in discrete mode
         const adRow = document.createElement("div");
@@ -156,11 +163,12 @@ class GitterCommFloating extends HTMLElement {
       this.appendMessage("bot", "Error: " + err.message);
     }
 
-    /* example: display a real AdSense slot once chat is active ---------- */
+    // example: display a real AdSense slot once chat is active ----------
     if (!window.adsLoaded) {
       googletag.cmd.push(() => googletag.display("native-ad"));
       window.adsLoaded = true;
     }
+    */
   }
 
   connectedCallback() {
