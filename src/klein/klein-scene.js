@@ -7,30 +7,25 @@ import {
 
 const PI2 = Math.PI * 2;
 
-// The camera path we ride is parametric in v.  Because the Klein bottle
-// identifies (u, v) ~ (-u, v + 2π), a curve at constant u is NOT closed:
-// to smoothly close it and exploit the non-orientable twist we let
-//     u(v) = RAIL_U · cos(v / 2)
-// which is natively invariant under the identification above and only
-// returns to its starting point after v travels 4π — exactly "two laps"
-// through the bottle. That is the visual payoff of a Klein bottle: you
-// exit where you expected the other side to be.
-//
-// We expose the full 4π journey across one page scroll so the user
-// feels the loop close on them once.
-const TOTAL_V = Math.PI * 4;
+// The bottle performs two full revolutions around Y as the user scrolls
+// from the top to the bottom of the journey section — the "two laps"
+// reading of the Klein bottle's non-orientable loop.
+const TOTAL_ROTATION = PI2 * 2;
 
-// Offset of the camera rail from the figure-eight self-intersection.
-// Bigger value ⇒ camera rides deeper inside one of the two lobes.
-const RAIL_U = 1.35;
+// Camera is fixed. No movement unless the user scrolls. The bottle
+// itself rotates/tilts as a function of scroll progress, which keeps the
+// horizon perfectly level and prevents the disorienting pitch the
+// fly-through camera had.
+const CAMERA_POSITION = new THREE.Vector3(0, 0.2, 11.5);
+const CAMERA_TARGET = new THREE.Vector3(0, 0, 0);
 
 export class KleinScene {
   constructor(canvas) {
     this.canvas = canvas;
     this.progress = 0; // 0 → 1 over the journey
     this.displayProgress = 0;
-    this.elapsed = 0;
-    this._clock = new THREE.Clock();
+    this._lastRenderedProgress = -1;
+    this._needsRender = true;
     this._resizeRaf = 0;
 
     this.renderer = new THREE.WebGLRenderer({
@@ -42,25 +37,31 @@ export class KleinScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.1;
     this.renderer.setClearColor(0x05060a, 0);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x05070e, 0.055);
 
     this.camera = new THREE.PerspectiveCamera(
-      62,
+      42,
       canvas.clientWidth / Math.max(canvas.clientHeight, 1),
-      0.02,
+      0.1,
       200
     );
+    this.camera.position.copy(CAMERA_POSITION);
+    this.camera.up.set(0, 1, 0);
+    this.camera.lookAt(CAMERA_TARGET);
+
+    // Hold the bottle in a pivot group so rotation around its own center
+    // is independent of the world origin.
+    this.pivot = new THREE.Group();
+    this.scene.add(this.pivot);
 
     this._buildLights();
     this._buildKlein();
     this._buildWireframeShell();
     this._buildStarfield();
     this._buildAurora();
-    this._buildRibbon();
 
     this.onResize();
     window.addEventListener("resize", this._onWindowResize, { passive: true });
@@ -81,32 +82,33 @@ export class KleinScene {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / Math.max(h, 1);
     this.camera.updateProjectionMatrix();
+    this._needsRender = true;
   }
 
   _buildLights() {
-    const ambient = new THREE.AmbientLight(0x334466, 0.45);
+    const ambient = new THREE.AmbientLight(0x334466, 0.55);
     this.scene.add(ambient);
 
-    const key = new THREE.PointLight(0x9ac6ff, 6.5, 18, 1.6);
-    key.position.set(1.5, 1.2, 0.6);
+    const key = new THREE.DirectionalLight(0x9ac6ff, 1.6);
+    key.position.set(3, 4, 5);
     this.scene.add(key);
-    this.keyLight = key;
 
-    const warm = new THREE.PointLight(0xffb199, 5.0, 20, 1.6);
-    warm.position.set(-1.4, -0.9, -0.4);
+    const warm = new THREE.DirectionalLight(0xffb199, 1.1);
+    warm.position.set(-4, -2, 3);
     this.scene.add(warm);
-    this.warmLight = warm;
 
-    const rim = new THREE.DirectionalLight(0xc8a6ff, 0.8);
-    rim.position.set(-2, 3, 2);
+    const rim = new THREE.DirectionalLight(0xc8a6ff, 0.9);
+    rim.position.set(-2, 3, -4);
     this.scene.add(rim);
   }
 
   _buildKlein() {
     const geom = createKleinGeometry({ uSegments: 160, vSegments: 360 });
 
+    // Orient so the "tunnel" of the figure-8 meridian faces the camera.
+    geom.rotateX(-Math.PI / 2);
+
     const uniforms = {
-      uTime: { value: 0 },
       uProgress: { value: 0 },
       uColorA: { value: new THREE.Color("#5ec8ff") },
       uColorB: { value: new THREE.Color("#c77bff") },
@@ -117,10 +119,10 @@ export class KleinScene {
 
     const material = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
-      metalness: 0.35,
-      roughness: 0.22,
-      transmission: 0.18,
-      thickness: 0.6,
+      metalness: 0.3,
+      roughness: 0.25,
+      transmission: 0.15,
+      thickness: 0.55,
       ior: 1.35,
       clearcoat: 1.0,
       clearcoatRoughness: 0.15,
@@ -130,11 +132,10 @@ export class KleinScene {
       side: THREE.DoubleSide,
       envMapIntensity: 1.1,
       transparent: true,
-      opacity: 0.88,
+      opacity: 0.92,
     });
 
     material.onBeforeCompile = (shader) => {
-      shader.uniforms.uTime = uniforms.uTime;
       shader.uniforms.uProgress = uniforms.uProgress;
       shader.uniforms.uColorA = uniforms.uColorA;
       shader.uniforms.uColorB = uniforms.uColorB;
@@ -145,14 +146,12 @@ export class KleinScene {
         .replace(
           "#include <common>",
           `#include <common>
-           varying vec2 vKleinUv;
-           varying vec3 vKleinPos;`
+           varying vec2 vKleinUv;`
         )
         .replace(
           "#include <begin_vertex>",
           `#include <begin_vertex>
-           vKleinUv = uv;
-           vKleinPos = position;`
+           vKleinUv = uv;`
         );
 
       shader.fragmentShader = shader.fragmentShader
@@ -160,8 +159,6 @@ export class KleinScene {
           "#include <common>",
           `#include <common>
            varying vec2 vKleinUv;
-           varying vec3 vKleinPos;
-           uniform float uTime;
            uniform float uProgress;
            uniform vec3 uColorA;
            uniform vec3 uColorB;
@@ -171,7 +168,7 @@ export class KleinScene {
         .replace(
           "#include <color_fragment>",
           `#include <color_fragment>
-           float ribbons = 0.5 + 0.5 * sin(vKleinUv.y * 40.0 + uTime * 0.35);
+           float ribbons = 0.5 + 0.5 * sin(vKleinUv.y * 40.0);
            ribbons = smoothstep(0.55, 0.98, ribbons);
            float band = fract(vKleinUv.y * 2.0 + uProgress);
            vec3 grad = mix(uColorA, uColorB, smoothstep(0.0, 0.5, band));
@@ -183,59 +180,64 @@ export class KleinScene {
     };
 
     this.klein = new THREE.Mesh(geom, material);
-    this.klein.renderOrder = 1;
-    this.scene.add(this.klein);
+    this.pivot.add(this.klein);
   }
 
   _buildWireframeShell() {
     const geom = createKleinGeometry({ uSegments: 90, vSegments: 180 });
+    geom.rotateX(-Math.PI / 2);
     const wire = new THREE.LineSegments(
       new THREE.WireframeGeometry(geom),
       new THREE.LineBasicMaterial({
         color: 0x9fc8ff,
         transparent: true,
-        opacity: 0.18,
+        opacity: 0.16,
         depthWrite: false,
       })
     );
-    wire.scale.multiplyScalar(1.003);
-    wire.renderOrder = 2;
+    wire.scale.multiplyScalar(1.004);
     this.wire = wire;
-    this.scene.add(wire);
+    this.pivot.add(wire);
   }
 
   _buildStarfield() {
-    const count = 1400;
+    // Static starfield — does not rotate or twinkle unless scroll progress
+    // changes. Parallax is progress-driven, not time-driven.
+    const count = 1200;
     const positions = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
+    const seeds = new Float32Array(count);
     for (let i = 0; i < count; i++) {
-      const r = 18 + Math.random() * 28;
+      const r = 22 + Math.random() * 30;
       const theta = Math.random() * PI2;
       const phi = Math.acos(2 * Math.random() - 1);
       positions[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = r * Math.cos(phi);
-      sizes[i] = 0.6 + Math.random() * 1.6;
+      sizes[i] = 0.7 + Math.random() * 1.6;
+      seeds[i] = Math.random();
     }
     const geom = new THREE.BufferGeometry();
     geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geom.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    geom.setAttribute("seed", new THREE.BufferAttribute(seeds, 1));
 
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 } },
+      uniforms: { uProgress: { value: 0 } },
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       vertexShader: `
         attribute float size;
-        uniform float uTime;
+        attribute float seed;
+        uniform float uProgress;
         varying float vAlpha;
         void main() {
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
-          float twinkle = 0.6 + 0.4 * sin(uTime * 1.8 + position.x * 3.1 + position.y * 1.7);
-          gl_PointSize = size * twinkle * (220.0 / -mv.z);
+          float shine = 0.7 + 0.3 * sin(seed * 12.56 + uProgress * 6.2831);
+          gl_PointSize = size * shine * (220.0 / -mv.z);
           gl_Position = projectionMatrix * mv;
-          vAlpha = twinkle;
+          vAlpha = shine;
         }
       `,
       fragmentShader: `
@@ -244,7 +246,7 @@ export class KleinScene {
           vec2 c = gl_PointCoord - 0.5;
           float d = length(c);
           float a = smoothstep(0.5, 0.0, d);
-          gl_FragColor = vec4(vec3(0.85, 0.92, 1.0), a * vAlpha * 0.85);
+          gl_FragColor = vec4(vec3(0.85, 0.92, 1.0), a * vAlpha * 0.75);
         }
       `,
     });
@@ -254,14 +256,11 @@ export class KleinScene {
   }
 
   _buildAurora() {
-    // A large sphere acting as a soft gradient backdrop, rendered behind
-    // everything. Gives the scene atmosphere without needing HDR env maps.
-    const geom = new THREE.SphereGeometry(60, 32, 32);
+    const geom = new THREE.SphereGeometry(70, 32, 32);
     const mat = new THREE.ShaderMaterial({
       side: THREE.BackSide,
       depthWrite: false,
       uniforms: {
-        uTime: { value: 0 },
         uProgress: { value: 0 },
         uTop: { value: new THREE.Color("#0a1030") },
         uMid: { value: new THREE.Color("#1a0f3c") },
@@ -276,57 +275,23 @@ export class KleinScene {
       `,
       fragmentShader: `
         varying vec3 vPos;
-        uniform float uTime;
         uniform float uProgress;
         uniform vec3 uTop;
         uniform vec3 uMid;
         uniform vec3 uBot;
         void main() {
-          float h = normalize(vPos).y * 0.5 + 0.5;
-          float swirl = 0.5 + 0.5 * sin(vPos.x * 0.12 + uTime * 0.2 + uProgress * 6.2831);
+          vec3 n = normalize(vPos);
+          float h = n.y * 0.5 + 0.5;
+          float swirl = 0.5 + 0.5 * sin(n.x * 3.0 + uProgress * 6.2831);
           vec3 col = mix(uBot, uMid, smoothstep(0.0, 0.55, h));
           col = mix(col, uTop, smoothstep(0.55, 1.0, h));
-          col += 0.04 * swirl * vec3(0.6, 0.4, 1.0);
+          col += 0.03 * swirl * vec3(0.6, 0.4, 1.0);
           gl_FragColor = vec4(col, 1.0);
         }
       `,
     });
     this.aurora = new THREE.Mesh(geom, mat);
     this.scene.add(this.aurora);
-  }
-
-  _buildRibbon() {
-    // Glowing "trail" ribbon that follows the camera path so the viewer
-    // sees where they've been and where they are going.
-    const samples = 600;
-    const spine = new Float32Array(samples * 3);
-    const tmp = new THREE.Vector3();
-    for (let i = 0; i < samples; i++) {
-      const v = (i / (samples - 1)) * TOTAL_V;
-      this._railPoint(v, tmp);
-      spine[i * 3 + 0] = tmp.x;
-      spine[i * 3 + 1] = tmp.y;
-      spine[i * 3 + 2] = tmp.z;
-    }
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute("position", new THREE.BufferAttribute(spine, 3));
-    const mat = new THREE.LineBasicMaterial({
-      color: 0x8fd2ff,
-      transparent: true,
-      opacity: 0.35,
-      depthWrite: false,
-    });
-    this.ribbon = new THREE.Line(geom, mat);
-    this.scene.add(this.ribbon);
-  }
-
-  _railPoint(v, out = new THREE.Vector3()) {
-    // Smoothly-closed closed curve on the Klein bottle at u = RAIL_U·cos(v/2).
-    // This respects the non-orientable identification so there is no kink
-    // and the camera naturally swaps lobes of the figure-8 meridian as it
-    // rounds the bottle's twist.
-    const u = RAIL_U * Math.cos(v * 0.5);
-    return kleinPoint(u, v, KLEIN_AA, out);
   }
 
   setProgress(p) {
@@ -336,7 +301,6 @@ export class KleinScene {
   start() {
     if (this._running) return;
     this._running = true;
-    this._clock.start();
     const loop = () => {
       if (!this._running) return;
       this._raf = requestAnimationFrame(loop);
@@ -351,62 +315,44 @@ export class KleinScene {
   }
 
   _tick() {
-    const dt = this._clock.getDelta();
-    this.elapsed += dt;
+    // Smoothly interpolate towards the target scroll progress so nudges of
+    // the wheel glide. Once displayProgress has converged we stop submitting
+    // draw calls entirely — the scene is completely static when the user
+    // is not scrolling.
+    const diff = this.progress - this.displayProgress;
+    if (Math.abs(diff) > 1e-5) {
+      this.displayProgress += diff * 0.12;
+      this._needsRender = true;
+    } else if (this.displayProgress !== this.progress) {
+      this.displayProgress = this.progress;
+      this._needsRender = true;
+    }
 
-    // Smooth the raw scroll value so that nudges of the wheel glide.
-    const lerp = 1 - Math.pow(0.001, dt);
-    this.displayProgress = THREE.MathUtils.lerp(
-      this.displayProgress,
-      this.progress,
-      lerp
-    );
+    if (!this._needsRender) return;
 
     const p = this.displayProgress;
 
-    // Camera moves along the rail over v ∈ [0, TOTAL_V].
-    const v = p * TOTAL_V + 0.0001;
-    const pos = this._railPoint(v);
+    // Scroll drives two full rotations around Y plus a gentle tilt on X
+    // that swings between ±11° across the journey. Deliberately no
+    // time-based terms — the scene does not move unless the user moves.
+    this.pivot.rotation.y = p * TOTAL_ROTATION;
+    this.pivot.rotation.x = Math.sin(p * PI2) * 0.20;
 
-    // Aim a bit further along the rail for a forward-looking camera.
-    const ahead = this._railPoint(v + 0.045);
-    const up = this._railPoint(v + 0.09).sub(pos).normalize();
-    // A stable up: project ambient +Z onto the frame, then re-orthogonalize.
-    const tangent = ahead.clone().sub(pos).normalize();
-    const worldUp = new THREE.Vector3(0, 0, 1);
-    const side = new THREE.Vector3().crossVectors(tangent, worldUp).normalize();
-    const camUp = new THREE.Vector3().crossVectors(side, tangent).normalize();
-
-    // Breathing oscillation so the camera feels alive even when scroll is still.
-    const breathe = 0.04 * Math.sin(this.elapsed * 0.7);
-    const look = ahead.clone().addScaledVector(camUp, breathe);
-    this.camera.position.copy(pos);
-    this.camera.up.copy(camUp);
-    this.camera.lookAt(look);
-
-    // Slow counter-rotation of the bottle gives "parallax inside the loop".
-    this.klein.rotation.z = p * Math.PI * 0.5 + this.elapsed * 0.02;
-    this.wire.rotation.copy(this.klein.rotation);
-
-    // Lights swim with the camera so the interior is never pitch black.
-    this.keyLight.position.copy(pos).addScaledVector(side, 1.2);
-    this.warmLight.position.copy(pos).addScaledVector(side, -1.4);
-
-    // Starfield drifts
-    if (this.stars.material.uniforms) {
-      this.stars.material.uniforms.uTime.value = this.elapsed;
-    }
-    this.stars.rotation.y = this.elapsed * 0.01;
+    // Progress-driven star parallax (subtle yaw as you scroll through).
+    this.stars.rotation.y = p * 0.25;
 
     if (this.aurora.material.uniforms) {
-      this.aurora.material.uniforms.uTime.value = this.elapsed;
       this.aurora.material.uniforms.uProgress.value = p;
     }
+    if (this.stars.material.uniforms) {
+      this.stars.material.uniforms.uProgress.value = p;
+    }
 
-    this.kleinUniforms.uTime.value = this.elapsed;
     this.kleinUniforms.uProgress.value = p;
 
     this.renderer.render(this.scene, this.camera);
+    this._lastRenderedProgress = p;
+    this._needsRender = false;
   }
 
   dispose() {
@@ -422,3 +368,5 @@ export class KleinScene {
     this.renderer.dispose();
   }
 }
+
+void kleinPoint; // geometry helper retained for future spine variations

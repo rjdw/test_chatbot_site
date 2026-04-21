@@ -7,10 +7,22 @@
     --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Fraunces", "Inter", ui-serif, Georgia, serif;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     font-family: var(--font-inter);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+  /* Anchor targets need to account for the 620vh sticky journey above
+     them — scroll-margin-top pushes the target down so the section lands
+     at the top of the viewport rather than behind the sticky canvas. */
+  #essays, #faq, #about, #in-prep {
+    scroll-margin-top: 1rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
   }
 }
 
@@ -114,7 +126,7 @@
     align-items: center;
     justify-content: space-between;
     pointer-events: auto;
-    z-index: 3;
+    z-index: 10;
     font-family: var(--font-inter);
   }
 
@@ -148,6 +160,8 @@
     color: inherit;
     text-decoration: none;
     transition: color 120ms ease;
+    cursor: pointer;
+    pointer-events: auto;
   }
   .klein-hud-nav a:hover { color: #fff; }
 

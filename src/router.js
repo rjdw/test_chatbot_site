@@ -89,11 +89,30 @@ async function navigate(url, push = true) {
   window.scrollTo(0, 0);
 }
 
+function scrollToHash(hash) {
+  if (!hash || hash === "#") return false;
+  const el = document.querySelector(hash);
+  if (!el) return false;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
+
 document.addEventListener("click", (e) => {
   const a = e.target.closest("a[href]");
+  if (!a || a.target === "_blank") return;
+
+  // In-page anchors (e.g. top-right Essays / FAQ nav) must explicitly
+  // scroll — the default browser jump misses when the target sits past
+  // a 620vh sticky section with scroll-driven sub-sections.
+  if (a.origin === location.origin && a.pathname === location.pathname && a.hash) {
+    if (scrollToHash(a.hash)) {
+      e.preventDefault();
+      history.replaceState(null, "", a.hash);
+    }
+    return;
+  }
+
   if (
-    !a ||
-    a.target === "_blank" ||
     a.origin !== location.origin ||
     !a.pathname.endsWith(".html")
   )
