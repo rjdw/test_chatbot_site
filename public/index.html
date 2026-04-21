@@ -4,83 +4,404 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="google-adsense-account" content="ca-pub-5642788581103145" />
-    <title>Richard Wang - How did you find this?</title>
-    <script type="module" crossorigin src="/assets/router-B1CpPUH7.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/router-CqxxCFrO.css">
+    <meta
+      name="description"
+      content="Richard Wang — ML engineer and co-founder of Clad Labs AI (YC F25). A scroll-driven journey through a Klein bottle."
+    />
+    <title>Richard Wang — A journey through a Klein bottle</title>
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&display=swap"
+    />
+    <script type="module" crossorigin src="/assets/router-D6zX_AIZ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/router-CFNpTrIn.css">
   </head>
 
   <body class="bg-gray-50 text-gray-800 leading-relaxed">
-    <!-- HEADER -->
-    <header role="banner"></header>
+    <!-- ──────────────────────────────────────────────────────────────
+         KLEIN BOTTLE SCROLL JOURNEY  (lives outside #page-content so
+         the PJAX router leaves it alone)
+         ────────────────────────────────────────────────────────────── -->
+    <section
+      id="klein-journey"
+      class="klein-journey home-only"
+      aria-label="Scroll-driven Klein bottle hero"
+    >
+      <div class="klein-stage">
+        <canvas class="klein-canvas" aria-hidden="true"></canvas>
+        <div class="klein-vignette" aria-hidden="true"></div>
 
-    <!-- MAIN CONTENT -->
-    <main class="mx-auto max-w-3xl px-4 space-y-12" id="page-content">
-      <header class="mx-auto max-w-3xl pt-10 pb-3 px-0 mb-6">
+        <!-- ── top bar ── -->
+        <div class="klein-hud">
+          <a class="klein-hud-brand" href="/">
+            <svg
+              class="klein-infinity"
+              viewBox="0 0 40 20"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 10c0-4 4-6 7-3s5 6 8 6 6-2 6-5-3-6-6-5-5 4-8 6-5 5-7 4-4-2-4-5 3-5 6-5"
+              />
+            </svg>
+            Richard Wang
+          </a>
+          <nav class="klein-hud-nav" aria-label="Primary">
+            <a href="#essays">Essays</a>
+            <a href="#faq">FAQ</a>
+            <a
+              href="https://cladlabs.ai"
+              target="_blank"
+              rel="noopener"
+              >Clad Labs</a
+            >
+          </nav>
+        </div>
+
+        <!-- ── right-edge progress rail ── -->
+        <div class="klein-progress" aria-hidden="true">
+          <span class="klein-progress-label">00%</span>
+          <div class="klein-progress-track">
+            <div class="klein-progress-bar"></div>
+          </div>
+          <div class="klein-step-dots">
+            <button class="klein-step-dot is-active" aria-label="Chapter 1"></button>
+            <button class="klein-step-dot" aria-label="Chapter 2"></button>
+            <button class="klein-step-dot" aria-label="Chapter 3"></button>
+            <button class="klein-step-dot" aria-label="Chapter 4"></button>
+            <button class="klein-step-dot" aria-label="Chapter 5"></button>
+            <button class="klein-step-dot" aria-label="Chapter 6"></button>
+          </div>
+        </div>
+
+        <!-- ── overlayed chapter content ── -->
+        <div class="klein-overlay">
+          <div class="klein-chapters">
+            <article class="klein-chapter" data-step="0">
+              <div class="klein-eyebrow">Chapter I · Enter the loop</div>
+              <h1 class="klein-headline">
+                Richard <em>Wang</em>
+              </h1>
+              <p class="klein-body">
+                ML engineer, researcher, jazz guitarist, basketball enthusiast.
+                Scroll to travel inside a Klein bottle — a surface with no
+                inside and no outside — and meet the version of me that lives
+                at each turn of the loop.
+              </p>
+              <div class="klein-meta">
+                <span>Est. ▸ San Francisco</span>
+                <span>Applied AI · Systems · Writing</span>
+              </div>
+            </article>
+
+            <article class="klein-chapter" data-step="0.2">
+              <div class="klein-eyebrow">Chapter II · Work</div>
+              <h2 class="klein-headline">
+                Co-founder &amp; CEO of <em>Clad Labs AI</em>
+              </h2>
+              <p class="klein-body">
+                We build AI coding infrastructure — context retrieval for large
+                codebases, agents that review code the way a senior engineer
+                would, and the guardrails that make both of those safe to ship.
+              </p>
+              <div class="klein-meta">
+                <span>Y Combinator · F25</span>
+                <span>Seed-stage</span>
+                <span>Hiring engineers</span>
+              </div>
+              <a
+                class="klein-cta"
+                href="https://cladlabs.ai"
+                target="_blank"
+                rel="noopener"
+                >Visit Clad Labs
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M7 17L17 7M9 7h8v8" />
+                </svg>
+              </a>
+            </article>
+
+            <article class="klein-chapter" data-step="0.4">
+              <div class="klein-eyebrow">Chapter III · What I'm doing now</div>
+              <h2 class="klein-headline">
+                Teaching machines to <em>read code</em>
+              </h2>
+              <p class="klein-body">
+                I spend most of my time on the plumbing behind capable coding
+                agents: Merkle trees over repositories, syntax-aware chunking,
+                vector recall, auction-less retrieval, and prompts that behave
+                under pressure. Applied research with a shipping deadline.
+              </p>
+              <div class="klein-meta">
+                <span>Context engineering</span>
+                <span>Retrieval</span>
+                <span>Prompt hardening</span>
+                <span>Evaluation</span>
+              </div>
+            </article>
+
+            <article class="klein-chapter" data-step="0.6">
+              <div class="klein-eyebrow">Chapter IV · Selected writing</div>
+              <h2 class="klein-headline">
+                Essays, in <em>progress</em>
+              </h2>
+              <p class="klein-body">
+                Writing on applied AI, statistical models, building in public,
+                and whatever else caught me that week.
+              </p>
+              <div class="klein-chapter-links">
+                <a
+                  href="https://www.cladlabs.ai/blog/ai-code-review"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <span class="k-title">How AI is transforming code review</span>
+                  <span class="k-desc"
+                    >From automated bug detection to senior-engineer review.</span
+                  >
+                </a>
+                <a
+                  href="https://www.cladlabs.ai/blog/intelligent-code-completion"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <span class="k-title"
+                    >Context management for code generation</span
+                  >
+                  <span class="k-desc"
+                    >Merkle trees, ASTs, and vectors — without drowning the
+                    model.</span
+                  >
+                </a>
+                <a href="/posts/driving_chp1.html">
+                  <span class="k-title">Modern Noir — Chapter 1</span>
+                  <span class="k-desc"
+                    >First pages of a short story.</span
+                  >
+                </a>
+                <a href="/posts/paradise_lost_petrarch.html">
+                  <span class="k-title"
+                    >Petrarchan love &amp; Eve's dream of Satan</span
+                  >
+                  <span class="k-desc"
+                    >The college essay that started a whole debacle.</span
+                  >
+                </a>
+              </div>
+            </article>
+
+            <article class="klein-chapter" data-step="0.8">
+              <div class="klein-eyebrow">Chapter V · In the lab</div>
+              <h2 class="klein-headline">
+                Drafts turning into <em>papers</em>
+              </h2>
+              <p class="klein-body">
+                Notes that aren't quite ready but are closer than they were
+                last week.
+              </p>
+              <div class="klein-chapter-links">
+                <a href="#in-prep">
+                  <span class="k-title"
+                    >Koopman operators — a practical intro for time-series
+                    ML</span
+                  >
+                  <span class="k-desc"
+                    >DMD + Koopman embeddings against chaotic fab-line
+                    data.</span
+                  >
+                </a>
+                <a href="#in-prep">
+                  <span class="k-title">Injecting LLM ads — lessons from YC</span>
+                  <span class="k-desc"
+                    >Vector-DB design, prompt hardening, auction-less ad
+                    retrieval.</span
+                  >
+                </a>
+              </div>
+            </article>
+
+            <article class="klein-chapter" data-step="1">
+              <div class="klein-eyebrow">Chapter VI · Exit</div>
+              <h2 class="klein-headline">
+                Say <em>hello</em>
+              </h2>
+              <p class="klein-body">
+                The loop never really closes — but the essays below do. Keep
+                scrolling for the archive, or reach out on any of the channels
+                below.
+              </p>
+              <div class="klein-chapter-links">
+                <a
+                  href="https://www.linkedin.com/in/richard-wang-39554994/"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <span class="k-title">LinkedIn</span>
+                  <span class="k-desc">The professional loop.</span>
+                </a>
+                <a
+                  href="https://x.com/zzzbuggg"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <span class="k-title">Twitter / X</span>
+                  <span class="k-desc">Half-formed ideas, in public.</span>
+                </a>
+                <a
+                  href="https://github.com/rjdw"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <span class="k-title">GitHub</span>
+                  <span class="k-desc">Where the code lives.</span>
+                </a>
+                <a href="#essays">
+                  <span class="k-title">The full archive</span>
+                  <span class="k-desc">Every essay on this site.</span>
+                </a>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="klein-scroll-hint" aria-hidden="true">
+          <span>Scroll to enter</span>
+          <span class="line"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Smooth gradient fade into the blog surface -->
+    <div class="klein-tail home-only" aria-hidden="true"></div>
+
+    <!-- ──────────────────────────────────────────────────────────────
+         BLOG SURFACE  (lives inside #page-content so the PJAX router
+         can swap in blog posts without unloading the 3D scene above)
+         ────────────────────────────────────────────────────────────── -->
+    <main
+      class="mx-auto max-w-3xl px-4 space-y-12"
+      id="page-content"
+    >
+      <header class="mx-auto max-w-3xl pt-10 pb-3 px-0 mb-6" id="about">
         <h1 class="text-4xl font-bold tracking-tight mb-2">Richard Wang</h1>
-        
-        <!-- Professional Info -->
+
         <div class="mb-4">
           <p class="text-lg text-gray-700 font-medium">
-            Co-founder & CEO of <a href="https://cladlabs.ai" target="_blank" class="text-blue-600 hover:text-blue-800 underline">Clad Labs AI</a>
+            Co-founder &amp; CEO of
+            <a
+              href="https://cladlabs.ai"
+              target="_blank"
+              class="text-blue-600 hover:text-blue-800 underline"
+              >Clad Labs AI</a
+            >
           </p>
           <p class="text-sm text-gray-500 flex items-center gap-1">
-            <span class="inline-block w-2 h-2 bg-orange-500 rounded-full"></span>
-            <a href="https://www.ycombinator.com/verify/qm6tebearhqowggs" target="_blank" class="hover:text-gray-700 underline">YC-backed</a>
+            <span
+              class="inline-block w-2 h-2 bg-orange-500 rounded-full"
+            ></span>
+            <a
+              href="https://www.ycombinator.com/verify/qm6tebearhqowggs"
+              target="_blank"
+              class="hover:text-gray-700 underline"
+              >YC-backed</a
+            >
             (F25)
           </p>
         </div>
 
-        <!-- Bio -->
         <p class="text-lg text-gray-600 mb-4">
           ML engineer, researcher, jazz guitarist, basketball enthusiast.
           Writing about applied AI, statistical models, building in public, and
           mostly whatever else comes to mind.
         </p>
 
-        <!-- Social Links -->
         <div class="flex items-center gap-4 text-sm">
-          <a href="https://www.linkedin.com/in/richard-wang-39554994/" 
-             target="_blank" 
-             class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
+          <a
+            href="https://www.linkedin.com/in/richard-wang-39554994/"
+            target="_blank"
+            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
+          >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z" clip-rule="evenodd"></path>
+              <path
+                fill-rule="evenodd"
+                d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z"
+                clip-rule="evenodd"
+              ></path>
             </svg>
             LinkedIn
           </a>
-          
-          <a href="https://x.com/zzzbuggg" 
-             target="_blank" 
-             class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
+
+          <a
+            href="https://x.com/zzzbuggg"
+            target="_blank"
+            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
+          >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M11.013 8.243l5.384-6.243h-1.276l-4.676 5.418-3.734-5.418h-4.31l5.648 8.225-5.648 6.552h1.276l4.935-5.72 3.943 5.72h4.31l-5.852-8.534zm-1.748 2.027l-.572-.819-4.551-6.514h1.96l3.67 5.256.572.819 4.773 6.83h-1.96l-3.892-5.572z"/>
+              <path
+                d="M11.013 8.243l5.384-6.243h-1.276l-4.676 5.418-3.734-5.418h-4.31l5.648 8.225-5.648 6.552h1.276l4.935-5.72 3.943 5.72h4.31l-5.852-8.534zm-1.748 2.027l-.572-.819-4.551-6.514h1.96l3.67 5.256.572.819 4.773 6.83h-1.96l-3.892-5.572z"
+              />
             </svg>
             Twitter
           </a>
 
-          <a href="https://github.com/rjdw" 
-             target="_blank" 
-             class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
+          <a
+            href="https://github.com/rjdw"
+            target="_blank"
+            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
+          >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"></path>
+              <path
+                fill-rule="evenodd"
+                d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z"
+                clip-rule="evenodd"
+              ></path>
             </svg>
             GitHub
           </a>
 
-          <a href="https://cladlabs.ai" 
-             target="_blank" 
-             class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          <a
+            href="https://cladlabs.ai"
+            target="_blank"
+            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              ></path>
             </svg>
             Clad Labs
           </a>
         </div>
       </header>
 
-      <!-- Blog feed ----------- -->
-
-      <section aria-labelledby="latest-essays" class="border-t mt-10 pt-10">
-        <!-- Section title -->
+      <section
+        id="essays"
+        aria-labelledby="latest-essays"
+        class="border-t mt-10 pt-10"
+      >
         <h2
           id="latest-essays"
           class="text-2xl font-semibold mb-4 tracking-tight"
@@ -180,22 +501,30 @@
           </p>
         </article>
       </section>
-      <!-- 
-      <section aria-labelledby="all-posts" class="border-t mt-10 pt-10 pb-10">
-        <h2 id="all-posts" class="text-2xl font-semibold mb-4">All Posts</h2>
 
-      </section> -->
-
-      <!-- Evergreen FAQ ----------- -->
-      <section aria-labelledby="faq" class="border-t pt-10">
-        <h2 id="faq" class="text-2xl font-semibold mb-4">FAQ</h2>
+      <section id="faq" aria-labelledby="faq-h" class="border-t pt-10">
+        <h2 id="faq-h" class="text-2xl font-semibold mb-4">FAQ</h2>
         <details class="mb-4">
           <summary class="font-medium cursor-pointer">
             What tech stack runs this site?
           </summary>
           <p class="mt-2">
-            Cloudflare Pages + Tailwind CSS + a Cloudflare Worker that proxies
-            Google Gemini.
+            Cloudflare Pages + Tailwind CSS + Vite + Three.js (for the Klein
+            bottle scroll journey) + a Cloudflare Worker that proxies Google
+            Gemini for the chat widget.
+          </p>
+        </details>
+        <details class="mb-4">
+          <summary class="font-medium cursor-pointer">
+            How does the Klein-bottle scroll thing work?
+          </summary>
+          <p class="mt-2">
+            A WebGL canvas renders Hermann Karcher's twisting Klein bottle
+            using its parametric equations. Your scroll position maps to a
+            parameter along a curve <em>inside</em> the surface, so each scroll
+            step advances the camera through the bottle's non-orientable loop.
+            Two full laps are spread across the page, which is why exiting on
+            one side brings you back flipped through the other.
           </p>
         </details>
         <details>
@@ -209,8 +538,9 @@
       </section>
     </main>
 
-    <!-- FOOTER -->
-    <footer class="mx-auto max-w-3xl px-4 py-12 text-sm text-gray-500">
+    <footer
+      class="mx-auto max-w-3xl px-4 py-12 text-sm text-gray-500"
+    >
       <nav class="space-x-4">
         <a class="hover:text-blue-600 underline" href="/">About</a>
         <a class="hover:text-blue-600 underline" href="/">Contact</a>
@@ -219,10 +549,8 @@
       <p class="mt-4">&copy; 2025 Richard Wang. Opinions are my own.</p>
     </footer>
 
-    <!-- Ad slot (initially empty) -->
     <div id="native-ad" class="native-slot"></div>
 
-    <!-- GPT script loads immediately but ad slot is displayed only after first bot reply -->
     <script
       async
       src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
@@ -240,8 +568,5 @@
       googletag.cmd.push(() => googletag.enableServices());
     </script>
 
-    <!-- Main JS (chat widget) -->
-
-    <!-- pjax router -->
   </body>
 </html>

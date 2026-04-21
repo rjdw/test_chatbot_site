@@ -5,9 +5,12 @@
 @layer base {
   :root {
     --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Fraunces", "Inter", ui-serif, Georgia, serif;
   }
   body {
     font-family: var(--font-inter);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 }
 
@@ -40,5 +43,380 @@
 
   .chat-bubble p {
     margin: 0;
+  }
+}
+
+/* ─── Klein bottle scroll journey ──────────────────── */
+@layer components {
+  .klein-journey {
+    position: relative;
+    width: 100%;
+    /* 6 chapters × ~100vh of scroll each feels ideal. */
+    height: 620vh;
+    color: #f2f4ff;
+    isolation: isolate;
+    background: #05060a;
+  }
+
+  .klein-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .klein-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Radial vignette + grain overlay to make the 3D feel cinematic */
+  .klein-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0) 40%,
+        rgba(0, 0, 0, 0.55) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(5, 6, 10, 0.35) 0%,
+        rgba(5, 6, 10, 0) 20%,
+        rgba(5, 6, 10, 0) 80%,
+        rgba(5, 6, 10, 0.5) 100%
+      );
+    mix-blend-mode: multiply;
+  }
+
+  .klein-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-content: stretch;
+  }
+
+  .klein-hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: auto;
+    z-index: 3;
+    font-family: var(--font-inter);
+  }
+
+  .klein-hud-brand {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-size: 1.1rem;
+    color: #f2f4ff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .klein-hud-brand .klein-infinity {
+    width: 22px;
+    height: 14px;
+    stroke: #cbd6ff;
+  }
+
+  .klein-hud-nav {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .klein-hud-nav a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 120ms ease;
+  }
+  .klein-hud-nav a:hover { color: #fff; }
+
+  .klein-chapters {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 0 max(1.25rem, 5vw);
+  }
+
+  .klein-chapter {
+    position: absolute;
+    max-width: 46rem;
+    width: min(92vw, 46rem);
+    opacity: 0;
+    transition: opacity 400ms ease, transform 400ms ease;
+    will-change: opacity, transform;
+    text-align: left;
+    text-shadow: 0 1px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .klein-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(200, 214, 255, 0.75);
+    margin-bottom: 1.1rem;
+  }
+  .klein-eyebrow::before {
+    content: "";
+    width: 34px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      rgba(200, 214, 255, 0.8),
+      rgba(200, 214, 255, 0)
+    );
+  }
+
+  .klein-headline {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2.25rem, 6.5vw, 4.8rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0 0 1rem;
+    color: #fefeff;
+  }
+  .klein-headline em {
+    font-style: italic;
+    background: linear-gradient(
+      120deg,
+      #8fd2ff 0%,
+      #d5a0ff 50%,
+      #ffb194 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .klein-body {
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    line-height: 1.55;
+    color: rgba(235, 240, 255, 0.82);
+    max-width: 36rem;
+  }
+
+  .klein-meta {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+  .klein-meta span {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid rgba(220, 226, 255, 0.18);
+    border-radius: 999px;
+    color: rgba(235, 240, 255, 0.78);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(6px);
+  }
+
+  .klein-cta {
+    margin-top: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.2rem;
+    color: #0b0d18;
+    background: linear-gradient(120deg, #cfe4ff 0%, #e8d5ff 50%, #ffd9c6 100%);
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    box-shadow: 0 8px 30px -10px rgba(150, 180, 255, 0.55);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+    pointer-events: auto;
+  }
+  .klein-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 32px -8px rgba(180, 200, 255, 0.65);
+  }
+  .klein-cta svg { width: 14px; height: 14px; }
+
+  .klein-chapter-links {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0.75rem;
+    pointer-events: auto;
+  }
+  .klein-chapter-links a {
+    display: block;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(200, 214, 255, 0.18);
+    border-radius: 0.9rem;
+    color: #f2f4ff;
+    text-decoration: none;
+    background: rgba(10, 12, 24, 0.35);
+    backdrop-filter: blur(10px);
+    transition: border-color 140ms ease, background 140ms ease,
+      transform 140ms ease;
+  }
+  .klein-chapter-links a:hover {
+    border-color: rgba(220, 226, 255, 0.45);
+    background: rgba(20, 24, 48, 0.55);
+    transform: translateY(-1px);
+  }
+  .klein-chapter-links .k-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+  .klein-chapter-links .k-desc {
+    display: block;
+    color: rgba(200, 214, 255, 0.7);
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+  }
+
+  /* Right-edge progress rail */
+  .klein-progress {
+    position: absolute;
+    right: clamp(1rem, 2.5vw, 2.5rem);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    pointer-events: auto;
+    z-index: 3;
+  }
+  .klein-progress-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    color: rgba(200, 214, 255, 0.7);
+    font-variant-numeric: tabular-nums;
+  }
+  .klein-progress-track {
+    position: relative;
+    width: 2px;
+    height: clamp(180px, 28vh, 280px);
+    background: rgba(220, 226, 255, 0.15);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .klein-progress-bar {
+    position: absolute;
+    inset: 0;
+    transform-origin: top center;
+    transform: scaleY(0);
+    background: linear-gradient(
+      180deg,
+      #9ec8ff 0%,
+      #d5a0ff 50%,
+      #ffb194 100%
+    );
+  }
+  .klein-step-dots {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.3rem;
+  }
+  .klein-step-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(220, 226, 255, 0.45);
+    background: transparent;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease,
+      transform 180ms ease;
+    padding: 0;
+  }
+  .klein-step-dot.is-active {
+    background: #e9e5ff;
+    border-color: #ffffff;
+    transform: scale(1.2);
+    box-shadow: 0 0 12px rgba(210, 200, 255, 0.55);
+  }
+
+  /* Scroll hint that fades as user begins scrolling */
+  .klein-scroll-hint {
+    position: absolute;
+    bottom: 1.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(220, 226, 255, 0.55);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .klein-scroll-hint .line {
+    width: 1px;
+    height: 34px;
+    background: linear-gradient(
+      180deg,
+      rgba(220, 226, 255, 0.7),
+      rgba(220, 226, 255, 0)
+    );
+    animation: klein-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes klein-pulse {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* Transition into the essays section: a soft gradient fade so the
+     black void gives way to the light blog surface. */
+  .klein-tail {
+    position: relative;
+    height: 28vh;
+    margin-top: -28vh;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(5, 6, 10, 0) 0%,
+      rgba(5, 6, 10, 0.8) 55%,
+      #f9fafb 100%
+    );
+    z-index: 2;
+  }
+
+  @media (max-width: 720px) {
+    .klein-hud { padding: 1rem 1.1rem; }
+    .klein-hud-nav { display: none; }
+    .klein-chapters { padding: 0 1.1rem; }
+    .klein-progress { right: 0.6rem; }
+    .klein-progress-track { height: 180px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .klein-chapter { transition: none; }
+    .klein-scroll-hint .line { animation: none; }
   }
 }
