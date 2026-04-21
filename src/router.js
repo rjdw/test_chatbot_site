@@ -1,10 +1,49 @@
 // ────────────────────────────────────────────────────────────
 // tiny PJAX router – keeps the chat widget & Klein journey alive
+// plus per-URL scroll restoration so "Back to essays" returns to
+// the exact card the user clicked from.
 // ────────────────────────────────────────────────────────────
 
 import { initKleinJourney } from "./klein/klein-journey.js";
 
 const container = document.getElementById("page-content");
+
+// Own scroll restoration; the default "auto" restoration fires before our
+// PJAX content swap finishes and is useless.
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+
+// pathname (without hash) → last-known scrollY at that URL.
+const scrollMap = new Map();
+
+function scrollKey(urlOrPath) {
+  try {
+    const u = new URL(urlOrPath, location.origin);
+    return u.pathname;
+  } catch {
+    return String(urlOrPath);
+  }
+}
+
+function rememberScroll(url = location.href) {
+  const y = window.scrollY;
+  scrollMap.set(scrollKey(url), y);
+  // Also stash on the current history entry so hard refresh / new tab
+  // still have access. replaceState keeps the URL intact.
+  try {
+    const state = { ...(history.state || {}), scroll: y };
+    history.replaceState(state, "", location.href);
+  } catch {}
+}
+
+function getStoredScroll(url, historyState) {
+  if (historyState && typeof historyState.scroll === "number") {
+    return historyState.scroll;
+  }
+  const v = scrollMap.get(scrollKey(url));
+  return typeof v === "number" ? v : null;
+}
 
 function isHomePath(url) {
   try {
@@ -25,9 +64,7 @@ function showHomeOnly(show) {
 
 /**
  * Ensure the Klein journey markup exists at the top of <body> when we are
- * on the home page. If it's missing (e.g. the user first landed on a
- * post page and then navigated to `/`), clone the elements from the
- * fetched home document and insert them.
+ * on the home page.
  */
 function ensureKleinJourney(frag) {
   if (document.getElementById("klein-journey")) return;
@@ -58,7 +95,24 @@ function ensureKleinJourney(frag) {
   initKleinJourney(clonedJourney);
 }
 
-async function navigate(url, push = true) {
+/**
+ * Core navigation. `push` = true → user-driven forward navigation;
+ * `push` = false → popstate (back/forward button).
+ *
+ * Forward nav: saves the current page's scroll position, then either
+ *   - restores a previously-saved scroll for the *destination* URL
+ *     (so e.g. clicking "Back to essays" from a post lands on the
+ *      card the user came from), or
+ *   - if there's no saved position (first visit to that URL), scrolls
+ *     to top.
+ *
+ * popstate: uses history.state.scroll if present, else the in-memory map.
+ */
+async function navigate(url, { push = true, popstateState = null } = {}) {
+  // Before swapping anything, capture the current page's scroll so that
+  // returning here later lands where the user left.
+  if (push) rememberScroll(location.href);
+
   const txt = await (await fetch(url)).text();
   const frag = document.createRange().createContextualFragment(txt);
   const next = frag.querySelector("#page-content");
@@ -68,9 +122,6 @@ async function navigate(url, push = true) {
     return;
   }
 
-  // Sync the wrapper class too — home uses `.blog-surface`, posts use
-  // an unclassed main holding an `.post-page` article. Without this
-  // the layout wouldn't change between the two.
   container.className = next.className || "";
   container.innerHTML = next.innerHTML;
   document.title = frag.querySelector("title")?.textContent ?? document.title;
@@ -84,13 +135,44 @@ async function navigate(url, push = true) {
     container.after(window.__globalFooterTemplate.cloneNode(true));
   }
 
-  if (push) history.pushState(null, "", url);
+  if (push) {
+    const initial = { scroll: null };
+    history.pushState(initial, "", url);
+  }
 
   const home = isHomePath(url);
   if (home) ensureKleinJourney(frag);
   showHomeOnly(home);
 
-  window.scrollTo(0, 0);
+  // Decide where to land. Priority:
+  //   1. A remembered scroll position for this URL — returning users
+  //      should see exactly the card they left from.
+  //   2. A hash in the destination URL — e.g. /#essays scrolls to the
+  //      section anchor.
+  //   3. Scroll-to-top as a last resort.
+  const stateToUse = popstateState ?? history.state;
+  const restoreY = getStoredScroll(url, stateToUse);
+
+  let hashTarget = null;
+  try {
+    const u = new URL(url, location.origin);
+    if (u.hash) hashTarget = u.hash;
+  } catch {}
+
+  requestAnimationFrame(() => {
+    if (typeof restoreY === "number") {
+      window.scrollTo(0, restoreY);
+      return;
+    }
+    if (hashTarget) {
+      const el = document.querySelector(hashTarget);
+      if (el) {
+        el.scrollIntoView({ behavior: "auto", block: "start" });
+        return;
+      }
+    }
+    window.scrollTo(0, 0);
+  });
 }
 
 function scrollToHash(hash) {
@@ -105,31 +187,57 @@ document.addEventListener("click", (e) => {
   const a = e.target.closest("a[href]");
   if (!a || a.target === "_blank") return;
 
-  // In-page anchors (e.g. top-right Essays / FAQ nav) must explicitly
-  // scroll — the default browser jump misses when the target sits past
-  // a 620vh sticky section with scroll-driven sub-sections.
-  if (a.origin === location.origin && a.pathname === location.pathname && a.hash) {
+  // In-page anchors.
+  if (
+    a.origin === location.origin &&
+    a.pathname === location.pathname &&
+    a.hash
+  ) {
     if (scrollToHash(a.hash)) {
       e.preventDefault();
-      history.replaceState(null, "", a.hash);
+      history.replaceState(
+        { ...(history.state || {}), scroll: window.scrollY },
+        "",
+        a.hash
+      );
     }
     return;
   }
 
-  if (
-    a.origin !== location.origin ||
-    !a.pathname.endsWith(".html")
-  )
-    return;
+  if (a.origin !== location.origin || !a.pathname.endsWith(".html")) return;
 
   e.preventDefault();
   navigate(a.href);
 });
 
-window.addEventListener("popstate", () => navigate(location.href, false));
+// Also persist the current scroll whenever the user might leave the page
+// via means we don't control (browser reload, external tab, etc.).
+window.addEventListener("beforeunload", () => rememberScroll());
+// A throttled listener so the active entry's state is kept fresh for
+// popstate (some browsers don't deliver scrollY inside popstate payload).
+let scrollStoreTimer = 0;
+window.addEventListener(
+  "scroll",
+  () => {
+    clearTimeout(scrollStoreTimer);
+    scrollStoreTimer = setTimeout(() => rememberScroll(), 120);
+  },
+  { passive: true }
+);
+
+window.addEventListener("popstate", (ev) => {
+  navigate(location.href, { push: false, popstateState: ev.state });
+});
 
 window.addEventListener("DOMContentLoaded", () => {
   const f = document.querySelector("footer");
   if (f) window.__globalFooterTemplate = f.cloneNode(true);
   showHomeOnly(isHomePath(location.href));
+
+  // If we arrived with state (e.g. full refresh after we'd stashed
+  // a scroll), try to honor it on first paint too.
+  const s = history.state;
+  if (s && typeof s.scroll === "number") {
+    requestAnimationFrame(() => window.scrollTo(0, s.scroll));
+  }
 });

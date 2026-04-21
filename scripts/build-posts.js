@@ -31,7 +31,7 @@ const POST_TEMPLATE = `<!DOCTYPE html>
   <body>
     <main id="page-content">
       <article class="post-page">
-        <a class="post-back" href="/">← Back to essays</a>
+        <a class="post-back" href="/#essays">← Back to essays</a>
         <h1 class="post-title" id="post-title">{{TITLE}}</h1>
         <div class="post-meta">
           <span>Essay</span>
