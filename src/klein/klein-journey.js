@@ -2,24 +2,41 @@ import { KleinScene } from "./klein-scene.js";
 
 // One "journey" component. It expects a section with the following DOM:
 //   .klein-journey
-//     .klein-stage  (position: sticky, 100vh)
+//     .klein-stage   (position: sticky, 100vh)
 //       canvas.klein-canvas
 //       .klein-overlay  (absolute; holds chapter panels & HUD)
 //         .klein-chapter (one per step, data-step attr)
 //
-// Each chapter's opacity is a triangular falloff centered on its step
-// fraction, so adjacent chapters cross-fade smoothly as the camera flies
-// through the Klein bottle.
+// Chapter cross-fade is a triangular opacity falloff. The scroll input
+// itself is *discretized*: while the journey section is pinned, one wheel
+// tick / one touch swipe / one keypress advances to the next chapter
+// anchor, so the scroll can never come to rest between chapters.
 
-const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const REDUCED_MOTION = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
 
-// How long after the last scroll event we consider the scroll "settled"
-// and are allowed to snap to the nearest chapter.
-const SCROLL_IDLE_MS = 160;
+// Idle-snap fallback (safety net). If the scroll ever does come to rest
+// between chapters (e.g. browser native wheel we can't intercept on a
+// different OS), bounce it to the nearest chapter after this many ms
+// of scroll quiet.
+const SCROLL_IDLE_MS = 140;
 
-// Suppress snapping for a short window after the user or code triggers
-// an explicit jump (step-dot click, hash navigation), so we don't fight
-// those scrolls mid-flight.
+// How long after firing a discrete step we ignore further wheel/touch
+// input — gives `scroll-behavior: smooth` time to complete so we don't
+// queue a dozen steps on a single trackpad gesture.
+const STEP_COOLDOWN_MS = 650;
+
+// Minimum wheel deltaY (in px) required to register a step. Filters out
+// trackpad micro-jitter in between real gestures.
+const WHEEL_DEADZONE = 6;
+
+// Minimum vertical touch travel (in px) required to register a step.
+const TOUCH_DEADZONE = 28;
+
+// Suppression window used for explicit programmatic scrolls (step-dot
+// clicks, hash nav). Prevents an in-flight smooth scroll from being
+// immediately overridden by an idle-snap.
 const SNAP_SUPPRESS_MS = 900;
 
 export function initKleinJourney(root) {
@@ -41,12 +58,18 @@ export function initKleinJourney(root) {
     }
   });
   const stepFracs = chapters.map((el) => parseFloat(el.dataset.step));
+  const lastStepIdx = stepFracs.length - 1;
 
   const scene = new KleinScene(canvas);
   scene.start();
 
   let snapSuppressUntil = 0;
+  let lastStepTime = 0;
   let scrollIdleTimer = 0;
+
+  // ────────────────────────────────────────────────────────────────
+  // Metrics
+  // ────────────────────────────────────────────────────────────────
 
   const journeyMetrics = () => {
     const rect = root.getBoundingClientRect();
@@ -57,11 +80,37 @@ export function initKleinJourney(root) {
     return { rect, total, scrolled, raw, p };
   };
 
+  const isPinned = () => {
+    const { rect, total } = journeyMetrics();
+    return (
+      total > 0 &&
+      rect.top <= 0 &&
+      rect.bottom > window.innerHeight + 1
+    );
+  };
+
+  const nearestStepIdx = (p) => {
+    let best = 0;
+    let bestD = Math.abs(p - stepFracs[0]);
+    for (let i = 1; i < stepFracs.length; i++) {
+      const d = Math.abs(p - stepFracs[i]);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    }
+    return best;
+  };
+
+  // ────────────────────────────────────────────────────────────────
+  // Rendering overlay updates
+  // ────────────────────────────────────────────────────────────────
+
   const onScroll = () => {
-    const { p, rect, total, scrolled } = journeyMetrics();
+    const { p } = journeyMetrics();
     scene.setProgress(p);
     updateOverlay(p);
-    scheduleSnap(rect, total, scrolled);
+    scheduleIdleSnap();
   };
 
   const updateOverlay = (p) => {
@@ -90,12 +139,17 @@ export function initKleinJourney(root) {
     });
   };
 
+  // ────────────────────────────────────────────────────────────────
+  // Scroll-to actions
+  // ────────────────────────────────────────────────────────────────
+
   const scrollToStep = (stepFrac, { suppress = true } = {}) => {
     const rect = root.getBoundingClientRect();
     const total = rect.height - window.innerHeight;
     if (total <= 0) return;
     const targetTop = root.offsetTop + stepFrac * total;
     if (suppress) snapSuppressUntil = performance.now() + SNAP_SUPPRESS_MS;
+    lastStepTime = performance.now();
     window.scrollTo({
       top: targetTop,
       behavior: REDUCED_MOTION ? "auto" : "smooth",
@@ -110,79 +164,144 @@ export function initKleinJourney(root) {
   });
 
   /**
-   * When the user stops scrolling inside the journey, bounce to the
-   * nearest chapter so we never come to rest between chapters. We only
-   * do this while the sticky stage is still in control — i.e., the
-   * journey rect is still spanning the viewport (roughly top ≤ 0 ≤
-   * bottom−vh). Once the user has scrolled past the journey into the
-   * essays feed below, we leave them alone.
+   * Advance by delta chapters. Returns true if a step was actually fired.
+   * Returns false when we are already at the edge in the requested
+   * direction (so the caller can let the browser handle the scroll to
+   * move the user past the journey).
    */
-  const scheduleSnap = (rect, total, scrolled) => {
+  const stepBy = (delta) => {
+    const now = performance.now();
+    if (now - lastStepTime < STEP_COOLDOWN_MS) return true; // swallow
+    const { p } = journeyMetrics();
+    const currentIdx = nearestStepIdx(p);
+    // Snap current-p onto its chapter: if we're off-step, we always want
+    // *at least* to land exactly on a chapter; delta=+1 going through an
+    // already-off-center state still moves to the next chapter because
+    // nearestStepIdx rounds to the nearest.
+    const targetIdx = Math.max(
+      0,
+      Math.min(lastStepIdx, currentIdx + delta)
+    );
+    if (targetIdx === currentIdx) {
+      // Edge case: we're already exactly on the target. If the user is
+      // pressing further in this direction and we're at the edge, let the
+      // browser take over so they can scroll past the journey.
+      const atEdge =
+        (delta > 0 && currentIdx === lastStepIdx) ||
+        (delta < 0 && currentIdx === 0);
+      if (atEdge) return false;
+      // Otherwise (off-step in the same direction already rounded) do
+      // nothing — a follow-up wheel will resolve it.
+      return true;
+    }
+    scrollToStep(stepFracs[targetIdx]);
+    return true;
+  };
+
+  // ────────────────────────────────────────────────────────────────
+  // Input interception (wheel / touch / keys)
+  // ────────────────────────────────────────────────────────────────
+
+  const onWheel = (e) => {
+    if (!isPinned()) return;
+    if (Math.abs(e.deltaY) < WHEEL_DEADZONE) {
+      e.preventDefault();
+      return;
+    }
+    const dir = e.deltaY > 0 ? 1 : -1;
+    const handled = stepBy(dir);
+    if (handled) e.preventDefault();
+  };
+
+  let touchStartY = null;
+  let touchHandled = false;
+  const onTouchStart = (e) => {
+    if (!isPinned()) return;
+    touchStartY = e.touches[0]?.clientY ?? null;
+    touchHandled = false;
+  };
+  const onTouchMove = (e) => {
+    if (!isPinned() || touchStartY == null) return;
+    if (touchHandled) {
+      e.preventDefault();
+      return;
+    }
+    const y = e.touches[0]?.clientY ?? 0;
+    const dy = touchStartY - y;
+    if (Math.abs(dy) >= TOUCH_DEADZONE) {
+      const dir = dy > 0 ? 1 : -1;
+      const handled = stepBy(dir);
+      touchHandled = true;
+      if (handled) e.preventDefault();
+    } else {
+      e.preventDefault();
+    }
+  };
+  const onTouchEnd = () => {
+    touchStartY = null;
+    touchHandled = false;
+  };
+
+  const onKey = (e) => {
+    if (!isPinned()) return;
+    let dir = 0;
+    switch (e.key) {
+      case "PageDown":
+      case "ArrowDown":
+      case " ":
+        dir = 1;
+        break;
+      case "PageUp":
+      case "ArrowUp":
+        dir = -1;
+        break;
+      case "Home":
+        e.preventDefault();
+        scrollToStep(stepFracs[0]);
+        return;
+      case "End":
+        e.preventDefault();
+        scrollToStep(stepFracs[lastStepIdx]);
+        return;
+      default:
+        return;
+    }
+    if (dir !== 0) {
+      const handled = stepBy(dir);
+      if (handled) e.preventDefault();
+    }
+  };
+
+  window.addEventListener("wheel", onWheel, { passive: false });
+  window.addEventListener("touchstart", onTouchStart, { passive: true });
+  window.addEventListener("touchmove", onTouchMove, { passive: false });
+  window.addEventListener("touchend", onTouchEnd, { passive: true });
+  window.addEventListener("keydown", onKey);
+
+  // ────────────────────────────────────────────────────────────────
+  // Idle-snap fallback
+  // ────────────────────────────────────────────────────────────────
+
+  const scheduleIdleSnap = () => {
     if (REDUCED_MOTION) return;
     clearTimeout(scrollIdleTimer);
-    scrollIdleTimer = setTimeout(() => maybeSnap(), SCROLL_IDLE_MS);
+    scrollIdleTimer = setTimeout(maybeSnap, SCROLL_IDLE_MS);
   };
 
   const maybeSnap = () => {
     if (performance.now() < snapSuppressUntil) return;
-    const { rect, total, scrolled, p } = journeyMetrics();
-
-    // Only snap when the sticky journey is actively pinned. That is
-    // true iff top < 0 and the bottom of the section is still below the
-    // viewport bottom:  rect.bottom > window.innerHeight + epsilon
-    const pinned =
-      rect.top <= 0 && rect.bottom > window.innerHeight + 1 && total > 0;
-    if (!pinned) return;
-
-    // Find nearest chapter step by absolute distance.
-    let nearest = stepFracs[0];
-    let nearestDist = Math.abs(p - nearest);
-    for (let i = 1; i < stepFracs.length; i++) {
-      const d = Math.abs(p - stepFracs[i]);
-      if (d < nearestDist) {
-        nearestDist = d;
-        nearest = stepFracs[i];
-      }
-    }
-
-    // If we're essentially already there, don't fire a pointless scroll.
-    const targetTop = root.offsetTop + nearest * total;
+    if (!isPinned()) return;
+    const { p, total } = journeyMetrics();
+    const idx = nearestStepIdx(p);
+    const targetTop = root.offsetTop + stepFracs[idx] * total;
     const currentTop = window.scrollY;
-    if (Math.abs(targetTop - currentTop) < 6) return;
-
-    scrollToStep(nearest);
+    if (Math.abs(targetTop - currentTop) < 4) return;
+    scrollToStep(stepFracs[idx]);
   };
 
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
-
-  // Skip the snap logic while the user is actively interacting (touch
-  // or wheel hold). We extend the suppression window on each event.
-  const nudgeSuppress = () => {
-    // Keep a minimum of SCROLL_IDLE_MS + small buffer so a mid-scroll
-    // wheel tick doesn't trigger an immediate snap.
-    snapSuppressUntil = Math.max(
-      snapSuppressUntil,
-      performance.now() + SCROLL_IDLE_MS + 60
-    );
-  };
-  window.addEventListener("wheel", nudgeSuppress, { passive: true });
-  window.addEventListener("touchmove", nudgeSuppress, { passive: true });
-  window.addEventListener("keydown", (e) => {
-    // Let the browser handle the scroll itself; we only care about
-    // ensuring it settles onto a chapter.
-    const scrollKeys = new Set([
-      "PageDown",
-      "PageUp",
-      "ArrowDown",
-      "ArrowUp",
-      "Home",
-      "End",
-      " ",
-    ]);
-    if (scrollKeys.has(e.key)) nudgeSuppress();
-  });
 
   // Pause the render loop entirely when the section is off-screen.
   const io = new IntersectionObserver(
@@ -201,8 +320,11 @@ export function initKleinJourney(root) {
       io.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      window.removeEventListener("wheel", nudgeSuppress);
-      window.removeEventListener("touchmove", nudgeSuppress);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("keydown", onKey);
       clearTimeout(scrollIdleTimer);
       scene.dispose();
       root.dataset.kleinInitialized = "";

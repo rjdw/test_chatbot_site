@@ -209,13 +209,22 @@
     font-family: var(--font-display);
     font-weight: 400;
     font-size: clamp(2.25rem, 6.5vw, 4.8rem);
-    line-height: 1.02;
+    line-height: 1.08;
     letter-spacing: -0.025em;
     margin: 0 0 1rem;
     color: #fefeff;
   }
   .klein-headline em {
     font-style: italic;
+    /* background-clip: text on an italic span trims the glyph's trailing
+       overhang (Fraunces italic has a wide 'y', 'g', 'f' terminal).
+       inline-block + extra right padding + negative margin keeps the
+       visual spacing correct while giving the gradient box room to
+       paint the full glyph. */
+    display: inline-block;
+    padding-right: 0.22em;
+    margin-right: -0.08em;
+    overflow: visible;
     background: linear-gradient(
       120deg,
       #8fd2ff 0%,
@@ -225,6 +234,7 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .klein-body {
@@ -280,7 +290,8 @@
     gap: 0.75rem;
     pointer-events: auto;
   }
-  .klein-chapter-links a {
+  .klein-chapter-links a,
+  .klein-chapter-links--static > div {
     display: block;
     padding: 0.9rem 1rem;
     border: 1px solid rgba(200, 214, 255, 0.18);
@@ -297,6 +308,10 @@
     background: rgba(20, 24, 48, 0.55);
     transform: translateY(-1px);
   }
+  .klein-chapter-links--static > div {
+    cursor: default;
+    opacity: 0.82;
+  }
   .klein-chapter-links .k-title {
     display: block;
     font-family: var(--font-display);
@@ -308,6 +323,18 @@
     color: rgba(200, 214, 255, 0.7);
     font-size: 0.85rem;
     margin-top: 0.2rem;
+  }
+  .klein-chapter-links .k-badge {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(220, 226, 255, 0.25);
+    font-size: 0.64rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(220, 226, 255, 0.85);
   }
 
   /* Right-edge progress rail */
