@@ -7,16 +7,13 @@ import {
 
 const PI2 = Math.PI * 2;
 
-// The bottle performs two full revolutions around Y as the user scrolls
-// from the top to the bottom of the journey section — the "two laps"
-// reading of the Klein bottle's non-orientable loop.
-const TOTAL_ROTATION = PI2 * 2;
-
 // Camera is fixed. No movement unless the user scrolls. The bottle
-// itself rotates/tilts as a function of scroll progress, which keeps the
-// horizon perfectly level and prevents the disorienting pitch the
-// fly-through camera had.
-const CAMERA_POSITION = new THREE.Vector3(0, 0.2, 11.5);
+// itself rotates/tilts/deforms as a function of scroll progress, which
+// keeps the horizon perfectly level and prevents the disorienting pitch
+// the fly-through camera had. Placed along +z looking at the origin so
+// the bottle's "donut hole" (the center of its ring) lands dead center
+// in the viewport.
+const CAMERA_POSITION = new THREE.Vector3(0, 0, 8.2);
 const CAMERA_TARGET = new THREE.Vector3(0, 0, 0);
 
 export class KleinScene {
@@ -43,7 +40,7 @@ export class KleinScene {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(
-      42,
+      38,
       canvas.clientWidth / Math.max(canvas.clientHeight, 1),
       0.1,
       200
@@ -103,13 +100,17 @@ export class KleinScene {
   }
 
   _buildKlein() {
-    const geom = createKleinGeometry({ uSegments: 160, vSegments: 360 });
+    const geom = createKleinGeometry({ uSegments: 180, vSegments: 400 });
 
-    // Orient so the "tunnel" of the figure-8 meridian faces the camera.
-    geom.rotateX(-Math.PI / 2);
+    // The bottle's v-parameter already sweeps around the z-axis, so at
+    // rest the ring sits in the XY plane with its "hole" facing the
+    // camera at +z. A small, constant tilt gives a 3/4 view that shows
+    // both the ring and the figure-8 meridian.
+    geom.rotateX(-0.35);
 
     const uniforms = {
       uProgress: { value: 0 },
+      uDeform: { value: 0 },
       uColorA: { value: new THREE.Color("#5ec8ff") },
       uColorB: { value: new THREE.Color("#c77bff") },
       uColorC: { value: new THREE.Color("#ff7aa7") },
@@ -137,23 +138,46 @@ export class KleinScene {
 
     material.onBeforeCompile = (shader) => {
       shader.uniforms.uProgress = uniforms.uProgress;
+      shader.uniforms.uDeform = uniforms.uDeform;
       shader.uniforms.uColorA = uniforms.uColorA;
       shader.uniforms.uColorB = uniforms.uColorB;
       shader.uniforms.uColorC = uniforms.uColorC;
       shader.uniforms.uColorD = uniforms.uColorD;
 
+      // Vertex deformation. Two things happen as the user scrolls:
+      //   1) A radial "pulse" travels around the ring (v direction),
+      //      swelling and pinching the tube — this is the convolution
+      //      the user asked for.
+      //   2) A small progress-driven torsion along the meridian (u)
+      //      bends the figure-eight in its plane, reinforcing the
+      //      non-orientable twist.
+      // All effects are strictly functions of uProgress, so the surface
+      // freezes the moment the user stops scrolling.
       shader.vertexShader = shader.vertexShader
         .replace(
           "#include <common>",
           `#include <common>
-           varying vec2 vKleinUv;`
+           varying vec2 vKleinUv;
+           uniform float uProgress;
+           uniform float uDeform;`
         )
         .replace(
           "#include <begin_vertex>",
           `#include <begin_vertex>
-           vKleinUv = uv;`
+           vKleinUv = uv;
+           float v = uv.y * 6.2831853;
+           float u = (uv.x - 0.5) * 6.2831853;
+           float pulse = sin(v * 3.0 - uProgress * 12.566) * 0.5
+                       + sin(v * 5.0 + uProgress * 18.849) * 0.25;
+           float swell = 1.0 + 0.13 * pulse * uDeform;
+           transformed *= swell;
+           float twist = sin(u * 2.0 + uProgress * 6.2831) * 0.08 * uDeform;
+           float c = cos(twist), s = sin(twist);
+           transformed.xy = mat2(c, -s, s, c) * transformed.xy;`
         );
 
+      // Fragment gradient keyed off progress so the colour field flows
+      // with the scroll too.
       shader.fragmentShader = shader.fragmentShader
         .replace(
           "#include <common>",
@@ -168,7 +192,7 @@ export class KleinScene {
         .replace(
           "#include <color_fragment>",
           `#include <color_fragment>
-           float ribbons = 0.5 + 0.5 * sin(vKleinUv.y * 40.0);
+           float ribbons = 0.5 + 0.5 * sin(vKleinUv.y * 40.0 + uProgress * 12.566);
            ribbons = smoothstep(0.55, 0.98, ribbons);
            float band = fract(vKleinUv.y * 2.0 + uProgress);
            vec3 grad = mix(uColorA, uColorB, smoothstep(0.0, 0.5, band));
@@ -184,20 +208,10 @@ export class KleinScene {
   }
 
   _buildWireframeShell() {
-    const geom = createKleinGeometry({ uSegments: 90, vSegments: 180 });
-    geom.rotateX(-Math.PI / 2);
-    const wire = new THREE.LineSegments(
-      new THREE.WireframeGeometry(geom),
-      new THREE.LineBasicMaterial({
-        color: 0x9fc8ff,
-        transparent: true,
-        opacity: 0.16,
-        depthWrite: false,
-      })
-    );
-    wire.scale.multiplyScalar(1.004);
-    this.wire = wire;
-    this.pivot.add(wire);
+    // Skipped — a fixed wireframe would drift away from the GPU-deformed
+    // surface. The iridescent material carries its own ribbon banding so
+    // the "filaments" look is preserved without a second geometry.
+    this.wire = null;
   }
 
   _buildStarfield() {
@@ -332,13 +346,13 @@ export class KleinScene {
 
     const p = this.displayProgress;
 
-    // Scroll drives two full rotations around Y plus a gentle tilt on X
-    // that swings between ±11° across the journey. Deliberately no
-    // time-based terms — the scene does not move unless the user moves.
-    this.pivot.rotation.y = p * TOTAL_ROTATION;
-    this.pivot.rotation.x = Math.sin(p * PI2) * 0.20;
+    // Gentle parallax of the whole bottle so the user can tell scroll is
+    // registering, but nothing disorienting: a small yaw and a whisper of
+    // tilt that both remain inside the framing of the ring.
+    this.pivot.rotation.y = p * 0.6;
+    this.pivot.rotation.z = Math.sin(p * PI2) * 0.08;
 
-    // Progress-driven star parallax (subtle yaw as you scroll through).
+    // Progress-driven star parallax.
     this.stars.rotation.y = p * 0.25;
 
     if (this.aurora.material.uniforms) {
@@ -349,6 +363,9 @@ export class KleinScene {
     }
 
     this.kleinUniforms.uProgress.value = p;
+    // Convolution amplitude ramps in fast at the start and stays on
+    // throughout the journey, so the bottle ripples with every scroll.
+    this.kleinUniforms.uDeform.value = THREE.MathUtils.smoothstep(p, 0, 0.08);
 
     this.renderer.render(this.scene, this.camera);
     this._lastRenderedProgress = p;
