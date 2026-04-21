@@ -16,23 +16,53 @@ const POST_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="google-adsense-account" content="ca-pub-5642788581103145" />
-    <title>{{TITLE}}</title>
+    <meta name="theme-color" content="#05070f" />
+    <title>{{TITLE}} — Richard Wang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body class="bg-gray-50 text-gray-800 leading-relaxed">
-    <main id="page-content" class="mx-auto max-w-3xl px-4 space-y-12">
-      <section aria-labelledby="post-title" class="border-t mt-10 pt-10">
-        <h2 id="post-title" class="text-2xl font-semibold mb-4 tracking-tight">
-          {{TITLE}}
-        </h2>
-        
-        <div class="max-w-3xl mx-auto leading-relaxed space-y-6 prose prose-gray max-w-none">
+  <body class="bg-ink text-parchment antialiased">
+    <div class="site-backdrop" aria-hidden="true"></div>
+
+    <nav class="site-nav">
+      <a href="/" class="site-nav__brand">
+        <span class="site-nav__mark" aria-hidden="true"></span>
+        <span>Richard Wang</span>
+      </a>
+      <div class="site-nav__links">
+        <a href="/#work">Work</a>
+        <a href="/#essays">Essays</a>
+        <a href="/#contact">Contact</a>
+      </div>
+    </nav>
+
+    <main id="page-content" class="post-page container">
+      <a class="post-back" href="/">&larr; Back to home</a>
+      <article class="post-article">
+        <h1 class="post-article__title">{{TITLE}}</h1>
+        <div class="post-article__body prose-content">
           {{CONTENT}}
         </div>
-      </section>
-      <section aria-labelledby="border" class="border-t mt-10 pt-10"></section>
+      </article>
     </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>&copy; 2025 Richard Wang. Opinions are my own.</p>
+        <nav>
+          <a href="/#work">Work</a>
+          <a href="/#essays">Essays</a>
+          <a href="/#contact">Contact</a>
+        </nav>
+      </div>
+    </footer>
 
     <script type="module" src="/main.js"></script>
     <script type="module" src="/router.js"></script>
