@@ -68,6 +68,10 @@ async function navigate(url, push = true) {
     return;
   }
 
+  // Sync the wrapper class too — home uses `.blog-surface`, posts use
+  // an unclassed main holding an `.post-page` article. Without this
+  // the layout wouldn't change between the two.
+  container.className = next.className || "";
   container.innerHTML = next.innerHTML;
   document.title = frag.querySelector("title")?.textContent ?? document.title;
 

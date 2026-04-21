@@ -11,27 +11,37 @@ marked.setOptions({
   gfm: true,
 });
 
-// Template for blog posts
+// Template for blog posts. The shell is kept deliberately spare — the
+// surrounding site (including the Klein bottle hero on `/`) is owned by
+// index.html; posts just render a centred reading column that inherits
+// the global Fraunces/Inter system.
 const POST_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="google-adsense-account" content="ca-pub-5642788581103145" />
-    <title>{{TITLE}}</title>
+    <title>{{TITLE}} — Richard Wang</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&display=swap"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body class="bg-gray-50 text-gray-800 leading-relaxed">
-    <main id="page-content" class="mx-auto max-w-3xl px-4 space-y-12">
-      <section aria-labelledby="post-title" class="border-t mt-10 pt-10">
-        <h2 id="post-title" class="text-2xl font-semibold mb-4 tracking-tight">
-          {{TITLE}}
-        </h2>
-        
-        <div class="max-w-3xl mx-auto leading-relaxed space-y-6 prose prose-gray max-w-none">
+  <body>
+    <main id="page-content">
+      <article class="post-page">
+        <a class="post-back" href="/">← Back to essays</a>
+        <h1 class="post-title" id="post-title">{{TITLE}}</h1>
+        <div class="post-meta">
+          <span>Essay</span>
+          <span>·</span>
+          <span>richardjdwang.com</span>
+        </div>
+        <div class="post-body">
           {{CONTENT}}
         </div>
-      </section>
-      <section aria-labelledby="border" class="border-t mt-10 pt-10"></section>
+      </article>
     </main>
 
     <script type="module" src="/main.js"></script>

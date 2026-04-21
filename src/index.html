@@ -295,260 +295,267 @@
          BLOG SURFACE  (lives inside #page-content so the PJAX router
          can swap in blog posts without unloading the 3D scene above)
          ────────────────────────────────────────────────────────────── -->
-    <main
-      class="mx-auto max-w-3xl px-4 space-y-12"
-      id="page-content"
-    >
-      <header class="mx-auto max-w-3xl pt-10 pb-3 px-0 mb-6" id="about">
-        <h1 class="text-4xl font-bold tracking-tight mb-2">Richard Wang</h1>
+    <main class="blog-surface" id="page-content">
+      <!-- Section 1 — About -->
+      <section class="blog-section" id="about">
+        <div class="blog-section-head">
+          <span class="blog-eyebrow">01 · About</span>
+          <h2 class="blog-section-title">
+            Richard <em class="blog-em">Wang</em>
+          </h2>
+        </div>
 
-        <div class="mb-4">
-          <p class="text-lg text-gray-700 font-medium">
+        <div class="blog-about">
+          <p class="blog-lede">
+            ML engineer, researcher, jazz guitarist, basketball enthusiast.
             Co-founder &amp; CEO of
-            <a
-              href="https://cladlabs.ai"
-              target="_blank"
-              class="text-blue-600 hover:text-blue-800 underline"
-              >Clad Labs AI</a
-            >
+            <a class="blog-link" href="https://cladlabs.ai" target="_blank" rel="noopener"
+              >Clad Labs AI</a>
+            — YC&nbsp;F25. Writing on applied AI, statistical models,
+            building in public, and whatever else comes to mind.
           </p>
-          <p class="text-sm text-gray-500 flex items-center gap-1">
-            <span
-              class="inline-block w-2 h-2 bg-orange-500 rounded-full"
-            ></span>
-            <a
-              href="https://www.ycombinator.com/verify/qm6tebearhqowggs"
-              target="_blank"
-              class="hover:text-gray-700 underline"
-              >YC-backed</a
-            >
-            (F25)
-          </p>
-        </div>
 
-        <p class="text-lg text-gray-600 mb-4">
-          ML engineer, researcher, jazz guitarist, basketball enthusiast.
-          Writing about applied AI, statistical models, building in public, and
-          mostly whatever else comes to mind.
-        </p>
-
-        <div class="flex items-center gap-4 text-sm">
-          <a
-            href="https://www.linkedin.com/in/richard-wang-39554994/"
-            target="_blank"
-            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-            LinkedIn
-          </a>
-
-          <a
-            href="https://x.com/zzzbuggg"
-            target="_blank"
-            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M11.013 8.243l5.384-6.243h-1.276l-4.676 5.418-3.734-5.418h-4.31l5.648 8.225-5.648 6.552h1.276l4.935-5.72 3.943 5.72h4.31l-5.852-8.534zm-1.748 2.027l-.572-.819-4.551-6.514h1.96l3.67 5.256.572.819 4.773 6.83h-1.96l-3.892-5.572z"
-              />
-            </svg>
-            Twitter
-          </a>
-
-          <a
-            href="https://github.com/rjdw"
-            target="_blank"
-            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-            GitHub
-          </a>
-
-          <a
-            href="https://cladlabs.ai"
-            target="_blank"
-            class="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              ></path>
-            </svg>
-            Clad Labs
-          </a>
-        </div>
-      </header>
-
-      <section
-        id="essays"
-        aria-labelledby="latest-essays"
-        class="border-t mt-10 pt-10"
-      >
-        <h2
-          id="latest-essays"
-          class="text-2xl font-semibold mb-4 tracking-tight"
-        >
-          Latest Essays
-        </h2>
-
-        <article class="space-y-2">
-          <h3 class="text-xl font-medium">
-            <a
-              href="https://www.cladlabs.ai/blog/ai-code-review"
-              target="_blank"
-              class="hover:text-blue-600 underline"
-              >How AI is Transforming Code Review Processes</a
-            >
-          </h3>
-          <p class="text-sm text-gray-500">Sep 28 2025 · 7 min read</p>
-          <p>
-            Exploring how AI is revolutionizing code review processes, from
-            automated bug detection to intelligent suggestions that enhance
-            development efficiency and code quality.
-          </p>
-        </article>
-
-        <article class="space-y-2 mt-8">
-          <h3 class="text-xl font-medium">
-            <a
-              href="https://www.cladlabs.ai/blog/intelligent-code-completion"
-              target="_blank"
-              class="hover:text-blue-600 underline"
-              >Advanced Context Management for Code Generation</a
-            >
-          </h3>
-          <p class="text-sm text-gray-500">Aug 22 2025 · 10 min read</p>
-          <p>
-            How modern AI coding assistants use Merkle trees, abstract syntax
-            trees, and vector databases to intelligently select relevant code
-            context from massive codebases without overwhelming the model.
-          </p>
-        </article>
-
-        <article class="space-y-2 mt-8">
-          <h3 class="text-xl font-medium">
-            <a
-              href="/posts/driving_chp1.html"
-              class="hover:text-blue-600 underline"
-              >Modern Noir - Chapter 1</a
-            >
-          </h3>
-          <p class="text-sm text-gray-500">Feb 23 2023 · 2 min read</p>
-          <p>First words for a short story.</p>
-        </article>
-
-        <article class="space-y-2 mt-8">
-          <h3 class="text-xl font-medium">
-            <a
-              href="/posts/paradise_lost_petrarch.html"
-              class="hover:text-blue-600 underline"
-            >
-              Petrarchan Love and Eve's Dream of Satan in Paradise Lost
+          <div class="blog-chips">
+            <a class="blog-chip" href="https://www.linkedin.com/in/richard-wang-39554994/" target="_blank" rel="noopener">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z" clip-rule="evenodd"/></svg>
+              LinkedIn
             </a>
-          </h3>
-          <p class="text-sm text-gray-500">Oct 2022 · 5 min read</p>
-          <p>
-            A college essay that got me wrongly accused of plagarism and caused
-            a whole debacle.
-          </p>
-        </article>
+            <a class="blog-chip" href="https://x.com/zzzbuggg" target="_blank" rel="noopener">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11.013 8.243l5.384-6.243h-1.276l-4.676 5.418-3.734-5.418h-4.31l5.648 8.225-5.648 6.552h1.276l4.935-5.72 3.943 5.72h4.31l-5.852-8.534zm-1.748 2.027l-.572-.819-4.551-6.514h1.96l3.67 5.256.572.819 4.773 6.83h-1.96l-3.892-5.572z"/></svg>
+              Twitter
+            </a>
+            <a class="blog-chip" href="https://github.com/rjdw" target="_blank" rel="noopener">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"/></svg>
+              GitHub
+            </a>
+            <a class="blog-chip" href="https://cladlabs.ai" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Clad Labs
+            </a>
+            <a class="blog-chip" href="https://www.ycombinator.com/verify/qm6tebearhqowggs" target="_blank" rel="noopener">
+              <span class="blog-chip-dot"></span>
+              YC F25
+            </a>
+          </div>
+        </div>
       </section>
 
-      <section aria-labelledby="in-prep" class="border-t mt-10 pt-10">
-        <h2 id="in-prep" class="text-2xl font-semibold mb-4">In Preparation</h2>
-
-        <article class="space-y-2">
-          <h3 class="text-xl font-medium">
-            <a href="/" class="hover:text-blue-600 underline"
-              >Koopman Operators: a Practical Intro for Time-Series ML</a
-            >
-          </h3>
-          <p class="text-sm text-gray-500">Apr 23 2025 · 8 min read</p>
-          <p>
-            How I used DMD + Koopman embeddings to debug chaotic sensor traces
-            in semiconductor fab data…
+      <!-- Section 2 — Essays -->
+      <section class="blog-section" id="essays">
+        <div class="blog-section-head">
+          <span class="blog-eyebrow">02 · Essays</span>
+          <h2 class="blog-section-title">
+            Selected <em class="blog-em">writing</em>
+          </h2>
+          <p class="blog-section-sub">
+            Working notes on AI infrastructure, the research that feeds it,
+            and a couple of things about neither.
           </p>
-        </article>
+        </div>
 
-        <article class="space-y-2 mt-8">
-          <h3 class="text-xl font-medium">
-            <a href="/" class="hover:text-blue-600 underline"
-              >Injecting LLM Ads: Lessons from YC</a
-            >
-          </h3>
-          <p class="text-sm text-gray-500">Apr 10 2025 · 6 min read</p>
-          <p>
-            Walking through vector DB design, prompt hardening, and why
-            auction-less ad retrieval still converts…
-          </p>
-        </article>
+        <ol class="blog-entries" role="list">
+          <li class="blog-entry">
+            <a class="blog-entry-link" href="https://www.cladlabs.ai/blog/ai-code-review" target="_blank" rel="noopener">
+              <span class="blog-entry-num">01</span>
+              <div class="blog-entry-body">
+                <h3 class="blog-entry-title">
+                  How AI is transforming code review
+                </h3>
+                <p class="blog-entry-desc">
+                  Automated bug detection, intelligent suggestions, and the
+                  shape of a review tool that earns a senior engineer's
+                  trust.
+                </p>
+                <div class="blog-entry-meta">
+                  <span>Sep 28 2025</span>
+                  <span>·</span>
+                  <span>7 min read</span>
+                  <span class="blog-tag">AI · DX</span>
+                </div>
+              </div>
+              <span class="blog-entry-arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+
+          <li class="blog-entry">
+            <a class="blog-entry-link" href="https://www.cladlabs.ai/blog/intelligent-code-completion" target="_blank" rel="noopener">
+              <span class="blog-entry-num">02</span>
+              <div class="blog-entry-body">
+                <h3 class="blog-entry-title">
+                  Advanced context management for code generation
+                </h3>
+                <p class="blog-entry-desc">
+                  Merkle trees, ASTs, and vector recall — how to pick the
+                  right context from massive codebases without drowning the
+                  model.
+                </p>
+                <div class="blog-entry-meta">
+                  <span>Aug 22 2025</span>
+                  <span>·</span>
+                  <span>10 min read</span>
+                  <span class="blog-tag">Retrieval</span>
+                </div>
+              </div>
+              <span class="blog-entry-arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+
+          <li class="blog-entry">
+            <a class="blog-entry-link" href="/posts/driving_chp1.html">
+              <span class="blog-entry-num">03</span>
+              <div class="blog-entry-body">
+                <h3 class="blog-entry-title">Modern Noir — Chapter 1</h3>
+                <p class="blog-entry-desc">
+                  First words for a short story. A ride down the 110 that
+                  ends in a city that never gave anything away for free.
+                </p>
+                <div class="blog-entry-meta">
+                  <span>Feb 23 2023</span>
+                  <span>·</span>
+                  <span>2 min read</span>
+                  <span class="blog-tag">Fiction</span>
+                </div>
+              </div>
+              <span class="blog-entry-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+
+          <li class="blog-entry">
+            <a class="blog-entry-link" href="/posts/paradise_lost_petrarch.html">
+              <span class="blog-entry-num">04</span>
+              <div class="blog-entry-body">
+                <h3 class="blog-entry-title">
+                  Petrarchan love &amp; Eve's dream of Satan in Paradise Lost
+                </h3>
+                <p class="blog-entry-desc">
+                  The college essay that got me wrongly accused of
+                  plagiarism and caused a whole debacle.
+                </p>
+                <div class="blog-entry-meta">
+                  <span>Oct 2022</span>
+                  <span>·</span>
+                  <span>5 min read</span>
+                  <span class="blog-tag">Essay</span>
+                </div>
+              </div>
+              <span class="blog-entry-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+        </ol>
       </section>
 
-      <section id="faq" aria-labelledby="faq-h" class="border-t pt-10">
-        <h2 id="faq-h" class="text-2xl font-semibold mb-4">FAQ</h2>
-        <details class="mb-4">
-          <summary class="font-medium cursor-pointer">
-            What tech stack runs this site?
-          </summary>
-          <p class="mt-2">
-            Cloudflare Pages + Tailwind CSS + Vite + Three.js (for the Klein
-            bottle scroll journey) + a Cloudflare Worker that proxies Google
-            Gemini for the chat widget.
+      <!-- Section 3 — In preparation -->
+      <section class="blog-section" id="in-prep">
+        <div class="blog-section-head">
+          <span class="blog-eyebrow">03 · In the lab</span>
+          <h2 class="blog-section-title">
+            Coming <em class="blog-em">soon</em>
+          </h2>
+          <p class="blog-section-sub">
+            A few longer pieces I'm still drafting.
           </p>
-        </details>
-        <details class="mb-4">
-          <summary class="font-medium cursor-pointer">
-            How does the Klein-bottle scroll thing work?
-          </summary>
-          <p class="mt-2">
-            A WebGL canvas renders Hermann Karcher's twisting Klein bottle
-            using its parametric equations. Your scroll position maps to a
-            parameter along a curve <em>inside</em> the surface, so each scroll
-            step advances the camera through the bottle's non-orientable loop.
-            Two full laps are spread across the page, which is why exiting on
-            one side brings you back flipped through the other.
-          </p>
-        </details>
-        <details>
-          <summary class="font-medium cursor-pointer">
-            Can I reuse your code?
-          </summary>
-          <p class="mt-2">
-            Nope, unless otherwise specified. Some stuff is MIT license.
-          </p>
-        </details>
+        </div>
+
+        <ul class="blog-entries" role="list">
+          <li class="blog-entry is-draft">
+            <div class="blog-entry-link">
+              <span class="blog-entry-num">—</span>
+              <div class="blog-entry-body">
+                <h3 class="blog-entry-title">
+                  Koopman operators: a practical intro for time-series ML
+                </h3>
+                <p class="blog-entry-desc">
+                  Using DMD + Koopman embeddings to debug chaotic sensor
+                  traces in semiconductor fab data.
+                </p>
+                <div class="blog-entry-meta">
+                  <span class="blog-badge">Coming soon</span>
+                  <span class="blog-tag">Time series</span>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li class="blog-entry is-draft">
+            <div class="blog-entry-link">
+              <span class="blog-entry-num">—</span>
+              <div class="blog-entry-body">
+                <h3 class="blog-entry-title">
+                  Injecting LLM ads: lessons from YC
+                </h3>
+                <p class="blog-entry-desc">
+                  Vector-DB design, prompt hardening, and why auction-less
+                  ad retrieval still converts.
+                </p>
+                <div class="blog-entry-meta">
+                  <span class="blog-badge">Coming soon</span>
+                  <span class="blog-tag">Applied AI</span>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Section 4 — FAQ -->
+      <section class="blog-section" id="faq">
+        <div class="blog-section-head">
+          <span class="blog-eyebrow">04 · FAQ</span>
+          <h2 class="blog-section-title">
+            Frequently <em class="blog-em">asked</em>
+          </h2>
+        </div>
+
+        <div class="blog-faq">
+          <details class="blog-faq-item">
+            <summary>What tech stack runs this site?</summary>
+            <p>
+              Cloudflare Pages + Tailwind CSS + Vite + Three.js (for the
+              Klein bottle scroll journey) + a Cloudflare Worker that
+              proxies Google Gemini for the chat widget.
+            </p>
+          </details>
+          <details class="blog-faq-item">
+            <summary>How does the Klein-bottle scroll thing work?</summary>
+            <p>
+              A WebGL canvas renders Hermann Karcher's twisting Klein
+              bottle using its parametric equations. Your scroll position
+              maps to a rotation of the surface; the bottle sits on a
+              static lean-back pitch so the ring's hole never stares the
+              camera down. Each scroll gesture advances exactly one
+              chapter — click any dot on the right rail to jump.
+            </p>
+          </details>
+          <details class="blog-faq-item">
+            <summary>Can I reuse your code?</summary>
+            <p>
+              Nope, unless otherwise specified. Some of it's MIT.
+            </p>
+          </details>
+        </div>
       </section>
     </main>
 
-    <footer
-      class="mx-auto max-w-3xl px-4 py-12 text-sm text-gray-500"
-    >
-      <nav class="space-x-4">
-        <a class="hover:text-blue-600 underline" href="/">About</a>
-        <a class="hover:text-blue-600 underline" href="/">Contact</a>
-        <a class="hover:text-blue-600 underline" href="/">Privacy</a>
-      </nav>
-      <p class="mt-4">&copy; 2025 Richard Wang. Opinions are my own.</p>
+    <footer class="blog-footer">
+      <div class="blog-footer-inner">
+        <a class="blog-footer-mark" href="/">
+          <svg viewBox="0 0 40 20" fill="none" stroke="currentColor"
+               stroke-linecap="round" stroke-linejoin="round"
+               stroke-width="1.4" aria-hidden="true">
+            <path d="M10 10c0-4 4-6 7-3s5 6 8 6 6-2 6-5-3-6-6-5-5 4-8 6-5 5-7 4-4-2-4-5 3-5 6-5"/>
+          </svg>
+          Richard Wang
+        </a>
+        <nav class="blog-footer-nav" aria-label="Footer">
+          <a href="#about">About</a>
+          <a href="#essays">Essays</a>
+          <a href="#faq">FAQ</a>
+          <a href="https://cladlabs.ai" target="_blank" rel="noopener">Clad Labs</a>
+        </nav>
+        <p class="blog-footer-copy">
+          &copy; 2025 Richard Wang. Opinions are my own.
+        </p>
+      </div>
     </footer>
 
     <div id="native-ad" class="native-slot"></div>

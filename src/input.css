@@ -218,22 +218,30 @@
     font-family: var(--font-display);
     font-weight: 400;
     font-size: clamp(2.25rem, 6.5vw, 4.8rem);
-    line-height: 1.08;
+    line-height: 1.18;
     letter-spacing: -0.025em;
     margin: 0 0 1rem;
     color: #fefeff;
   }
   .klein-headline em {
     font-style: italic;
-    /* background-clip: text on an italic span trims the glyph's trailing
-       overhang (Fraunces italic has a wide 'y', 'g', 'f' terminal).
-       inline-block + extra right padding + negative margin keeps the
-       visual spacing correct while giving the gradient box room to
-       paint the full glyph. */
+    /* Two separate clipping problems fixed together:
+       1) Trailing horizontal overhang of italic glyphs (f, y, s) –
+          fixed by inline-block + padding-right and a balancing
+          negative margin-right.
+       2) Descender clipping of g/y/p — display:inline-block +
+          background-clip:text makes the gradient's paint box the
+          inline-block's CONTENT box, which stops at the baseline-ish
+          when line-height is tight.  padding-bottom extends the
+          clip-box below the baseline so the descender gets its paint.
+          margin-bottom balances the extra padding so vertical rhythm
+          with the paragraph below is unchanged. */
     display: inline-block;
-    padding-right: 0.22em;
-    margin-right: -0.08em;
+    padding: 0 0.22em 0.14em 0.02em;
+    margin: 0 -0.08em -0.14em 0;
+    line-height: inherit;
     overflow: visible;
+    vertical-align: baseline;
     background: linear-gradient(
       120deg,
       #8fd2ff 0%,
@@ -450,7 +458,7 @@
       180deg,
       rgba(5, 6, 10, 0) 0%,
       rgba(5, 6, 10, 0.8) 55%,
-      #f9fafb 100%
+      #fbfaf7 100%
     );
     z-index: 2;
   }
@@ -468,3 +476,468 @@
     .klein-scroll-hint .line { animation: none; }
   }
 }
+
+/* ─── Blog surface (below the Klein journey) ──────── */
+@layer components {
+  .blog-surface {
+    max-width: 54rem;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 2.5rem) 6rem;
+    background: #fbfaf7;
+    color: #1a1e2b;
+    font-family: var(--font-inter);
+    position: relative;
+    z-index: 3;
+  }
+  /* When the journey is hidden (post pages), give the blog some top space. */
+  html.is-post .blog-surface { padding-top: 5rem; }
+
+  .blog-section {
+    padding-top: clamp(4rem, 10vh, 7rem);
+  }
+  .blog-section + .blog-section {
+    padding-top: clamp(5rem, 12vh, 9rem);
+  }
+
+  .blog-section-head {
+    max-width: 42rem;
+    margin-bottom: 3rem;
+  }
+  .blog-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #6b7080;
+    margin-bottom: 1.2rem;
+  }
+  .blog-eyebrow::after {
+    content: "";
+    width: 42px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      rgba(60, 66, 96, 0.6),
+      rgba(60, 66, 96, 0)
+    );
+  }
+  .blog-section-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: #0b0d18;
+  }
+  /* Same italic-gradient treatment as the Klein headlines but on light. */
+  .blog-em {
+    font-style: italic;
+    display: inline-block;
+    padding: 0 0.22em 0.14em 0.02em;
+    margin: 0 -0.08em -0.14em 0;
+    line-height: inherit;
+    overflow: visible;
+    vertical-align: baseline;
+    background: linear-gradient(
+      120deg,
+      #4a7ad9 0%,
+      #9b5cd6 55%,
+      #e07a84 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .blog-section-sub {
+    margin-top: 1rem;
+    color: #555a6b;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    max-width: 36rem;
+  }
+
+  .blog-lede {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.15rem, 2vw, 1.4rem);
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    color: #30354a;
+    max-width: 38rem;
+    margin: 0 0 1.75rem;
+  }
+
+  .blog-link {
+    color: #2f4bbd;
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 94%;
+    transition: color 140ms ease, background-size 140ms ease;
+  }
+  .blog-link:hover {
+    color: #13204f;
+    background-size: 100% 2px;
+  }
+
+  .blog-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .blog-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.82rem;
+    color: #2d3142;
+    background: #fff;
+    border: 1px solid rgba(20, 24, 48, 0.08);
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 1px 0 rgba(15, 18, 36, 0.03);
+    transition: color 140ms ease, border-color 140ms ease,
+      transform 140ms ease, box-shadow 140ms ease;
+  }
+  .blog-chip svg {
+    width: 14px;
+    height: 14px;
+  }
+  .blog-chip:hover {
+    color: #0b0d18;
+    border-color: rgba(20, 24, 48, 0.22);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px -8px rgba(15, 18, 36, 0.25);
+  }
+  .blog-chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #ff7a1a;
+    box-shadow: 0 0 0 3px rgba(255, 122, 26, 0.18);
+  }
+
+  /* Essay list */
+  .blog-entries {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid rgba(20, 24, 48, 0.08);
+  }
+  .blog-entry {
+    border-bottom: 1px solid rgba(20, 24, 48, 0.08);
+  }
+  .blog-entry-link {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    gap: 1.5rem;
+    padding: 1.75rem 0.5rem;
+    color: inherit;
+    text-decoration: none;
+    transition: background 140ms ease;
+    border-radius: 0.75rem;
+  }
+  a.blog-entry-link:hover {
+    background: rgba(20, 24, 48, 0.03);
+  }
+  a.blog-entry-link:hover .blog-entry-title {
+    color: #2f4bbd;
+  }
+  a.blog-entry-link:hover .blog-entry-arrow {
+    transform: translate(3px, -3px);
+    color: #2f4bbd;
+  }
+  .blog-entry.is-draft .blog-entry-link {
+    cursor: default;
+    opacity: 0.85;
+  }
+
+  .blog-entry-num {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    color: #9aa0b4;
+    padding-top: 0.45rem;
+    min-width: 2ch;
+  }
+
+  .blog-entry-body {
+    min-width: 0;
+  }
+  .blog-entry-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.55rem;
+    color: #0b0d18;
+    transition: color 140ms ease;
+  }
+  .blog-entry-desc {
+    margin: 0 0 0.75rem;
+    color: #4a4f62;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+  .blog-entry-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.8rem;
+    color: #6b7080;
+  }
+  .blog-entry-arrow {
+    font-size: 1.2rem;
+    color: #9aa0b4;
+    padding-top: 0.45rem;
+    transition: transform 140ms ease, color 140ms ease;
+  }
+
+  .blog-tag {
+    padding: 0.18rem 0.55rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3b405a;
+    background: rgba(20, 24, 48, 0.05);
+    border-radius: 999px;
+  }
+  .blog-badge {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b76e1a;
+    background: rgba(255, 170, 64, 0.14);
+    border: 1px solid rgba(255, 170, 64, 0.35);
+    border-radius: 999px;
+  }
+
+  /* FAQ */
+  .blog-faq {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 44rem;
+  }
+  .blog-faq-item {
+    padding: 1.1rem 1.25rem;
+    background: #fff;
+    border: 1px solid rgba(20, 24, 48, 0.08);
+    border-radius: 0.9rem;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+  }
+  .blog-faq-item[open] {
+    border-color: rgba(20, 24, 48, 0.16);
+    box-shadow: 0 8px 22px -16px rgba(15, 18, 36, 0.3);
+  }
+  .blog-faq-item > summary {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    color: #0b0d18;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .blog-faq-item > summary::-webkit-details-marker { display: none; }
+  .blog-faq-item > summary::after {
+    content: "+";
+    font-family: var(--font-inter);
+    font-weight: 300;
+    font-size: 1.4rem;
+    color: #9aa0b4;
+    transition: transform 180ms ease;
+  }
+  .blog-faq-item[open] > summary::after {
+    content: "–";
+  }
+  .blog-faq-item > p {
+    margin: 0.7rem 0 0;
+    color: #4a4f62;
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  .blog-footer {
+    background: #fbfaf7;
+    border-top: 1px solid rgba(20, 24, 48, 0.08);
+    position: relative;
+    z-index: 3;
+  }
+  .blog-footer-inner {
+    max-width: 54rem;
+    margin: 0 auto;
+    padding: 2.5rem clamp(1.25rem, 4vw, 2.5rem) 2.5rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    color: #6b7080;
+    font-size: 0.88rem;
+  }
+  .blog-footer-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: #0b0d18;
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  .blog-footer-mark svg {
+    width: 24px;
+    height: 14px;
+    color: #3b405a;
+  }
+  .blog-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.2rem;
+  }
+  .blog-footer-nav a {
+    color: #4a4f62;
+    text-decoration: none;
+    transition: color 140ms ease;
+  }
+  .blog-footer-nav a:hover { color: #0b0d18; }
+  .blog-footer-copy { margin: 0; text-align: right; }
+
+  @media (max-width: 640px) {
+    .blog-entry-link {
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      padding: 1.5rem 0.25rem;
+    }
+    .blog-entry-arrow { display: none; }
+    .blog-footer-inner {
+      grid-template-columns: 1fr;
+      justify-items: start;
+      text-align: left;
+    }
+    .blog-footer-copy { text-align: left; }
+    .blog-footer-nav { justify-content: flex-start; }
+  }
+}
+
+/* ─── Blog post page shell (used by posts under /posts/*) ── */
+@layer components {
+  .post-page {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: clamp(4rem, 8vh, 6rem) clamp(1.25rem, 4vw, 2rem) 5rem;
+    color: #1a1e2b;
+    background: #fbfaf7;
+  }
+  .post-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    color: #6b7080;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    margin-bottom: 2rem;
+    transition: color 140ms ease, transform 140ms ease;
+  }
+  .post-back:hover {
+    color: #0b0d18;
+    transform: translateX(-2px);
+  }
+  .post-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    color: #0b0d18;
+  }
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: #6b7080;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(20, 24, 48, 0.08);
+  }
+  .post-body {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #2d3142;
+  }
+  .post-body p { margin: 0 0 1.2rem; }
+  .post-body h2, .post-body h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    color: #0b0d18;
+    margin: 2.2rem 0 0.8rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+  }
+  .post-body h2 { font-size: 1.55rem; }
+  .post-body h3 { font-size: 1.25rem; }
+  .post-body a { color: #2f4bbd; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .post-body a:hover { color: #13204f; }
+  .post-body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.92em;
+    background: rgba(20, 24, 48, 0.05);
+    padding: 0.15em 0.35em;
+    border-radius: 0.3em;
+  }
+  .post-body pre {
+    background: #0b0d18;
+    color: #e5e7f3;
+    padding: 1.1rem 1.3rem;
+    border-radius: 0.8rem;
+    overflow-x: auto;
+    margin: 1.4rem 0;
+  }
+  .post-body pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+  }
+  .post-body blockquote {
+    border-left: 3px solid #9aa0b4;
+    margin: 1.5rem 0;
+    padding: 0.1rem 0 0.1rem 1.1rem;
+    color: #4a4f62;
+    font-style: italic;
+  }
+  .post-body ul, .post-body ol {
+    margin: 0 0 1.2rem 1.2rem;
+    padding: 0;
+  }
+  .post-body li { margin-bottom: 0.4rem; }
+
+  @media (max-width: 640px) {
+    .post-body { font-size: 1rem; }
+  }
+}
+
+/* Make sure the whole page carries the warmer off-white base. */
+body { background: #fbfaf7; }
+
