@@ -117,21 +117,22 @@ export function initKleinJourney(root) {
     if (progressBar) progressBar.style.transform = `scaleY(${p})`;
     if (progressLabel) progressLabel.textContent = formatProgress(p);
 
+    // Which chapter is visually in front right now? (Nearest by step).
+    const activeIdx = nearestStepIdx(p);
     const window0 = 1 / Math.max(chapters.length - 1, 1);
-    let activeIdx = 0;
-    let activeDist = Infinity;
     chapters.forEach((el, i) => {
       const step = stepFracs[i];
       const d = Math.abs(p - step);
       const opacity = Math.max(0, 1 - d / (window0 * 0.75));
       el.style.opacity = String(opacity);
-      el.style.pointerEvents = opacity > 0.55 ? "auto" : "none";
+      // Only the active chapter can receive clicks, so the invisible
+      // chapters stacked in the same spot never steal input from the
+      // one the user is reading.
+      const isActive = i === activeIdx;
+      el.classList.toggle("is-active", isActive);
+      el.style.pointerEvents = isActive ? "auto" : "none";
       const parallax = (p - step) * 22;
       el.style.transform = `translate3d(0, ${parallax.toFixed(2)}px, 0)`;
-      if (d < activeDist) {
-        activeDist = d;
-        activeIdx = i;
-      }
     });
 
     stepDots.forEach((dot, i) => {

@@ -178,10 +178,19 @@
     max-width: 46rem;
     width: min(92vw, 46rem);
     opacity: 0;
+    /* Six chapters stack absolutely at the same spot. Even when one is
+       invisible its child anchors would still eat clicks for the
+       chapter visible underneath, so the WHOLE chapter subtree is
+       click-through by default. The JS flips this to `auto` only on
+       the currently-visible chapter. */
+    pointer-events: none;
     transition: opacity 400ms ease, transform 400ms ease;
     will-change: opacity, transform;
     text-align: left;
     text-shadow: 0 1px 24px rgba(0, 0, 0, 0.45);
+  }
+  .klein-chapter.is-active {
+    pointer-events: auto;
   }
 
   .klein-eyebrow {
@@ -275,7 +284,6 @@
     text-decoration: none;
     box-shadow: 0 8px 30px -10px rgba(150, 180, 255, 0.55);
     transition: transform 160ms ease, box-shadow 160ms ease;
-    pointer-events: auto;
   }
   .klein-cta:hover {
     transform: translateY(-1px);
@@ -288,7 +296,6 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
     gap: 0.75rem;
-    pointer-events: auto;
   }
   .klein-chapter-links a,
   .klein-chapter-links--static > div {
