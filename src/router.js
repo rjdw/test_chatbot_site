@@ -16,6 +16,10 @@ async function navigate(url, push = true) {
     return;
   }
 
+  // Let listeners (like the 3D hero) dispose resources tied to the
+  // soon-to-be-removed DOM before we swap it out.
+  window.dispatchEvent(new CustomEvent("pjax:beforeswap"));
+
   // swap only the <main> content
   container.innerHTML = next.innerHTML;
   document.title = frag.querySelector("title")?.textContent ?? document.title;
@@ -34,6 +38,9 @@ async function navigate(url, push = true) {
 
   if (push) history.pushState(null, "", url);
   window.scrollTo(0, 0);
+
+  // Let listeners re-mount after the new DOM is in place.
+  window.dispatchEvent(new CustomEvent("pjax:afterswap"));
 }
 
 // ── Intercept in-site HTML links only
