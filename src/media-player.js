@@ -52,6 +52,8 @@ function setupEmbed(embed) {
       modestbranding: "1",
       enablejsapi: "1",
       playsinline: "1",
+      hd: "1",
+      vq: "hd1080",
       // origin must match the page at runtime, otherwise the IFrame API
       // refuses to post messages (silent failure).
       origin: location.origin,
@@ -101,7 +103,16 @@ function setupEmbed(embed) {
           new Promise((resolve) => {
             player = new window.YT.Player(iframe.id, {
               events: {
-                onReady: () => resolve(player),
+                onReady: () => {
+                  try {
+                    // Best-effort HD request. YouTube overrides this
+                    // based on player size + available formats; passing
+                    // 'hd1080' serves as a ceiling hint.
+                    player.setPlaybackQuality &&
+                      player.setPlaybackQuality("hd1080");
+                  } catch {}
+                  resolve(player);
+                },
                 onError: (e) =>
                   console.warn("[media] YT player error", e && e.data),
               },

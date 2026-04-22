@@ -43,8 +43,13 @@ function mediaSlug(m) {
 function mediaThumbnail(m) {
   if (m.thumbnail) return m.thumbnail;
   if (m.source === "youtube" && m.videoId) {
-    // hqdefault is the most reliable YouTube fallback — maxresdefault
-    // 404s for videos that weren't uploaded at >=1280x720.
+    return `https://i.ytimg.com/vi/${encodeURIComponent(m.videoId)}/hqdefault.jpg`;
+  }
+  return null;
+}
+
+function mediaThumbnailFallback(m) {
+  if (m.source === "youtube" && m.videoId) {
     return `https://i.ytimg.com/vi/${encodeURIComponent(m.videoId)}/hqdefault.jpg`;
   }
   return null;
@@ -78,8 +83,11 @@ function mediaCardHtml(m, { variant = "grid" } = {}) {
   ]
     .filter(Boolean)
     .join("");
+  const fallback = mediaThumbnailFallback(m);
+  const fallbackAttr =
+    fallback && fallback !== thumb ? ` data-fallback="${attr(fallback)}"` : "";
   const thumbBlock = thumb
-    ? `<span class="media-card-thumb" style="background-image:url('${attr(thumb)}')">
+    ? `<span class="media-card-thumb" style="background-image:url('${attr(thumb)}')"${fallbackAttr}>
          <span class="media-card-play" aria-hidden="true">
            <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="rgba(11,13,24,0.72)"/><path d="M19 15 L19 33 L33 24 Z" fill="#fff"/></svg>
          </span>
@@ -123,6 +131,31 @@ async function renderHomeMedia() {
   host.innerHTML =
     mediaCardHtml(hero, { variant: "hero" }) +
     rest.map((m) => mediaCardHtml(m, { variant: "grid" })).join("");
+  probeThumbnails(host);
+}
+
+// Probe any element whose background-image is author-set; if it 404s or
+// returns YouTube's 120x90 missing-art placeholder, swap in data-fallback.
+function probeThumbnails(root) {
+  root.querySelectorAll("[data-fallback]").forEach((el) => {
+    const match = (el.style.backgroundImage || "").match(
+      /url\(['"]?([^'")]+)['"]?\)/
+    );
+    if (!match) return;
+    const primary = match[1];
+    const fallback = el.dataset.fallback;
+    if (!primary || !fallback || primary === fallback) return;
+    const probe = new Image();
+    probe.onload = () => {
+      if (probe.naturalWidth <= 120) {
+        el.style.backgroundImage = `url('${fallback}')`;
+      }
+    };
+    probe.onerror = () => {
+      el.style.backgroundImage = `url('${fallback}')`;
+    };
+    probe.src = primary;
+  });
 }
 
 async function renderHomeNotes() {

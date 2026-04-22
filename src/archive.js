@@ -166,6 +166,28 @@ function render() {
     list.appendChild(renderItem(it, i));
   });
 
+  // Probe author-supplied thumbnails; fall back to YouTube hqdefault
+  // if the primary image misses.
+  list.querySelectorAll("[data-fallback]").forEach((el) => {
+    const m = (el.style.backgroundImage || "").match(
+      /url\(['"]?([^'")]+)['"]?\)/
+    );
+    if (!m) return;
+    const primary = m[1];
+    const fallback = el.dataset.fallback;
+    if (!primary || !fallback || primary === fallback) return;
+    const probe = new Image();
+    probe.onload = () => {
+      if (probe.naturalWidth <= 120) {
+        el.style.backgroundImage = `url('${fallback}')`;
+      }
+    };
+    probe.onerror = () => {
+      el.style.backgroundImage = `url('${fallback}')`;
+    };
+    probe.src = primary;
+  });
+
   if (count) {
     count.textContent =
       visible.length === 1
@@ -225,8 +247,11 @@ function renderItem(it, index) {
   // Media rows use a thumbnail in place of the numeric index so the
   // picture carries its weight in the list rhythm.
   const thumb = mediaThumbnailFor(it);
+  const fallback = mediaFallbackFor(it);
+  const fbAttr =
+    fallback && fallback !== thumb ? ` data-fallback="${attr(fallback)}"` : "";
   const lead = thumb
-    ? `<span class="blog-entry-thumb" style="background-image:url('${attr(thumb)}')">
+    ? `<span class="blog-entry-thumb" style="background-image:url('${attr(thumb)}')"${fbAttr}>
          <span class="blog-entry-thumb-play" aria-hidden="true">
            <svg viewBox="0 0 24 24"><path d="M8 5 L8 19 L19 12 Z" fill="#fff"/></svg>
          </span>
@@ -254,6 +279,14 @@ function renderItem(it, index) {
 function mediaThumbnailFor(it) {
   if (it.kind !== "media") return null;
   if (it.thumbnail) return it.thumbnail;
+  if (it.source === "youtube" && it.videoId) {
+    return `https://i.ytimg.com/vi/${encodeURIComponent(it.videoId)}/hqdefault.jpg`;
+  }
+  return null;
+}
+
+function mediaFallbackFor(it) {
+  if (it.kind !== "media") return null;
   if (it.source === "youtube" && it.videoId) {
     return `https://i.ytimg.com/vi/${encodeURIComponent(it.videoId)}/hqdefault.jpg`;
   }

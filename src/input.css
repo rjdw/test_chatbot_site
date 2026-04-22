@@ -1203,9 +1203,13 @@
     border-color: #0b0d18;
   }
 
-  /* Player */
+  /* Player — breaks out of the reading column so YouTube serves HD.
+     At container width ~>= 960 px the embed will request 1080p; we cap
+     at 64rem so the player stays sensible on very wide screens. */
   .media-player {
-    margin: 0 0 2rem;
+    margin: 0 calc(50% - min(50vw - 1.25rem, 32rem)) 2rem;
+    width: min(calc(100vw - 2.5rem), 64rem);
+    max-width: min(calc(100vw - 2.5rem), 64rem);
     border-radius: 1rem;
     overflow: hidden;
     background: #0b0d18;
