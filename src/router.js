@@ -237,7 +237,17 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  if (a.origin !== location.origin || !a.pathname.endsWith(".html")) return;
+  if (a.origin !== location.origin) return;
+
+  // Clean routes Cloudflare Pages serves as HTML: `/`, `/writing`, and
+  // any path ending in `.html` (posts). We treat anything that doesn't
+  // have a file extension other than `.html` as navigable.
+  const p = a.pathname;
+  const navigable =
+    p === "/" ||
+    p.endsWith(".html") ||
+    /^\/[a-zA-Z0-9\-_/]+$/.test(p); // no extension → pretty URL
+  if (!navigable) return;
 
   e.preventDefault();
   navigate(a.href);

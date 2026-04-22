@@ -4,65 +4,87 @@ import "./chat/widget-loader.js";
 // Home notes preview (populated from /content.json)
 // ────────────────────────────────────────────────────────────
 
-async function renderHomeNotes() {
-  const host = document.getElementById("home-notes-list");
-  if (!host) return;
+let _contentCache = null;
+async function loadContent() {
+  if (_contentCache) return _contentCache;
   try {
     const res = await fetch("/content.json", { cache: "no-cache" });
     if (!res.ok) throw new Error("content.json " + res.status);
-    const data = await res.json();
-    const notes = (data.notes || []).slice(0, 3);
-    if (notes.length === 0) {
-      host.innerHTML = `
-        <li class="blog-entry is-draft">
-          <div class="blog-entry-link">
-            <span class="blog-entry-num">—</span>
-            <div class="blog-entry-body">
-              <h3 class="blog-entry-title">First notes on the way</h3>
-              <p class="blog-entry-desc">Check back soon.</p>
-            </div>
-          </div>
-        </li>`;
-      return;
-    }
-    host.innerHTML = notes.map((n, i) => noteCard(n, i)).join("");
+    _contentCache = await res.json();
   } catch (e) {
-    console.error("[home] notes load failed", e);
+    console.error("[content] load failed", e);
+    _contentCache = { essays: [], notes: [], drafts: [] };
   }
+  return _contentCache;
 }
 
-function noteCard(n, i) {
+async function renderHomeEssays() {
+  const host = document.getElementById("home-essays-list");
+  if (!host) return;
+  const data = await loadContent();
+  const essays = (data.essays || [])
+    .slice()
+    .sort((a, b) => (Date.parse(b.date || 0) || 0) - (Date.parse(a.date || 0) || 0));
+  const featured = essays.filter((e) => e.featured);
+  const pick = (featured.length >= 4 ? featured : essays).slice(0, 4);
+  host.innerHTML = pick.map((e, i) => entryCard(e, i)).join("");
+}
+
+async function renderHomeNotes() {
+  const host = document.getElementById("home-notes-list");
+  if (!host) return;
+  const data = await loadContent();
+  const notes = (data.notes || []).slice(0, 3);
+  if (notes.length === 0) {
+    host.innerHTML = `
+      <li class="blog-entry is-draft">
+        <div class="blog-entry-link">
+          <span class="blog-entry-num">—</span>
+          <div class="blog-entry-body">
+            <h3 class="blog-entry-title">First notes on the way</h3>
+            <p class="blog-entry-desc">Check back soon.</p>
+          </div>
+        </div>
+      </li>`;
+    return;
+  }
+  host.innerHTML = notes.map((n, i) => entryCard(n, i)).join("");
+}
+
+function entryCard(it, i) {
   const num = String(i + 1).padStart(2, "0");
-  const href = n.href || "#";
-  const external = !!n.external;
+  const href = it.href || "#";
+  const external = !!it.external;
   const arrow = external ? "↗" : "→";
   const attrs = external ? ' target="_blank" rel="noopener"' : "";
-  const date = n.date
-    ? new Date(n.date).toLocaleDateString(undefined, {
+  const date = it.date
+    ? new Date(it.date).toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
       })
     : "";
-  const tags = (n.tags || [])
-    .map(
-      (t) =>
-        `<span class="blog-tag">${escapeHtml(t)}</span>`
-    )
+  const readTime = it.readTime
+    ? `<span>·</span><span>${escapeHtml(it.readTime)}</span>`
+    : "";
+  const tags = (it.tags || [])
+    .slice(0, 2)
+    .map((t) => `<span class="blog-tag">${escapeHtml(t)}</span>`)
     .join("");
   return `
     <li class="blog-entry">
       <a class="blog-entry-link" href="${attr(href)}"${attrs}>
         <span class="blog-entry-num">${num}</span>
         <div class="blog-entry-body">
-          <h3 class="blog-entry-title">${escapeHtml(n.title || "")}</h3>
+          <h3 class="blog-entry-title">${escapeHtml(it.title || "")}</h3>
           ${
-            n.description
-              ? `<p class="blog-entry-desc">${escapeHtml(n.description)}</p>`
+            it.description
+              ? `<p class="blog-entry-desc">${escapeHtml(it.description)}</p>`
               : ""
           }
           <div class="blog-entry-meta">
             ${date ? `<span>${date}</span>` : ""}
+            ${readTime}
             ${tags}
           </div>
         </div>
@@ -189,12 +211,15 @@ async function bootArchiveIfPresent() {
 
 function boot() {
   bootKlein();
+  renderHomeEssays();
   renderHomeNotes();
   bootArchiveIfPresent();
 }
 
 // Re-run the lightweight hooks after PJAX navigations too.
 document.addEventListener("pjax:navigated", () => {
+  _contentCache = null; // allow fresh data on nav
+  renderHomeEssays();
   renderHomeNotes();
   bootArchiveIfPresent();
 });
