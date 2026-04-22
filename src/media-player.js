@@ -6,15 +6,19 @@
 //   2. Wire the chapter list so clicking a chapter seeks the iframe,
 //      using the YouTube IFrame Player API loaded on first play.
 //
-// All embed parameters come from data-* attributes on the wrapper —
-// we never store URLs inside <template> elements (which browsers parse
-// into .content DocumentFragments rather than text).
+// The module is safe to re-init after PJAX navigation: we look up any
+// .media-embed in the DOM that hasn't been wired yet.
 
-(function initMediaPosts() {
+export function init() {
   document.querySelectorAll(".media-embed").forEach(setupEmbed);
-})();
+}
+init();
+document.addEventListener("pjax:navigated", init);
 
 function setupEmbed(embed) {
+  if (embed.dataset.mediaInit === "1") return;
+  embed.dataset.mediaInit = "1";
+
   const poster = embed.querySelector(".media-embed-poster");
   if (!poster) return;
 
@@ -25,12 +29,11 @@ function setupEmbed(embed) {
   const primaryThumb = embed.dataset.thumb;
   const fallbackThumb = embed.dataset.thumbFallback;
 
-  // YouTube's /maxresdefault.jpg 404s for any video whose source was
-  // <1280x720. We probe it once; if it misses, drop to /hqdefault.jpg.
+  // YouTube's /maxresdefault.jpg returns a 120x90 placeholder when
+  // missing. Probe once; if missing, swap in the hqdefault fallback.
   if (primaryThumb && fallbackThumb && primaryThumb !== fallbackThumb) {
     const probe = new Image();
     probe.onload = () => {
-      // maxres returns a 120×90 placeholder when missing; detect it.
       if (probe.naturalWidth <= 120) {
         poster.style.backgroundImage = `url('${fallbackThumb}')`;
       }
@@ -93,8 +96,15 @@ function setupEmbed(embed) {
     iframe.allowFullscreen = true;
     iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
     iframe.className = "media-embed-iframe";
-    // Give the iframe a stable id so YT.Player can find it.
     iframe.id = `media-${videoId}-${Math.random().toString(36).slice(2, 8)}`;
+
+    // Defensive: if the play-button inside the poster retained keyboard
+    // focus when we're about to hide it, move focus off first so that
+    // aria-hidden removal + replacement doesn't leave an assistive-tech
+    // warning.
+    if (document.activeElement && poster.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
     poster.replaceWith(iframe);
 
     if (provider === "youtube") {
@@ -105,9 +115,6 @@ function setupEmbed(embed) {
               events: {
                 onReady: () => {
                   try {
-                    // Best-effort HD request. YouTube overrides this
-                    // based on player size + available formats; passing
-                    // 'hd1080' serves as a ceiling hint.
                     player.setPlaybackQuality &&
                       player.setPlaybackQuality("hd1080");
                   } catch {}
@@ -132,13 +139,6 @@ function setupEmbed(embed) {
     if (e.key === "Enter" || e.key === " ") onActivate(e);
   });
 
-  // Also catch clicks on the inner <button> and its <svg> children —
-  // they sit inside the poster so they bubble, but defensive.
-  const playBtn = embed.querySelector(".media-play");
-  if (playBtn) playBtn.addEventListener("click", onActivate);
-
-  // Scope chapter buttons to this article only, so pages with multiple
-  // embeds stay independent.
   const article = embed.closest(".media-page") || document;
   article.querySelectorAll(".media-chapter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {

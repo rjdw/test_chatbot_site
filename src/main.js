@@ -337,12 +337,50 @@ async function bootArchiveIfPresent() {
   }
 }
 
+async function bootMediaIfPresent() {
+  if (!document.querySelector(".media-embed")) return;
+  try {
+    const mod = await import("./media-player.js");
+    if (mod.init) mod.init();
+  } catch (e) {
+    console.error("[media] init failed", e);
+  }
+}
+
+// Label the "← Back" link based on where the breadcrumb stack will take
+// the user. Runs on every page paint.
+function relabelBackLinks() {
+  const prev = (window.__rwPeekBack && window.__rwPeekBack()) || null;
+  document.querySelectorAll("a.post-back[data-back-link]").forEach((a) => {
+    const label = (() => {
+      if (!prev) {
+        const fb = a.dataset.backFallback || "/";
+        if (fb.startsWith("/#media")) return "← Back";
+        if (fb.startsWith("/#essays") || fb === "/") return "← Back home";
+        return "← Back";
+      }
+      try {
+        const u = new URL(prev, location.origin);
+        const p = u.pathname;
+        if (p === "/" || p === "/index.html") return "← Back home";
+        if (p.startsWith("/writing")) return "← Back to archive";
+        if (p.startsWith("/posts/")) return "← Back to essay";
+        if (p.startsWith("/media/")) return "← Back to media";
+      } catch {}
+      return "← Back";
+    })();
+    a.textContent = label;
+  });
+}
+
 function boot() {
   bootKlein();
   renderHomeEssays();
   renderHomeMedia();
   renderHomeNotes();
   bootArchiveIfPresent();
+  bootMediaIfPresent();
+  relabelBackLinks();
 }
 
 // Re-run the lightweight hooks after PJAX navigations too.
@@ -352,6 +390,8 @@ document.addEventListener("pjax:navigated", () => {
   renderHomeMedia();
   renderHomeNotes();
   bootArchiveIfPresent();
+  bootMediaIfPresent();
+  relabelBackLinks();
 });
 
 if (document.readyState === "loading") {

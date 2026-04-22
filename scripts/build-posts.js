@@ -31,7 +31,7 @@ const POST_TEMPLATE = `<!DOCTYPE html>
   <body>
     <main id="page-content">
       <article class="post-page">
-        <a class="post-back" href="/#essays">← Back to essays</a>
+        <a class="post-back" href="/#essays" data-back-link data-back-fallback="/#essays">← Back</a>
         <h1 class="post-title" id="post-title">{{TITLE}}</h1>
         <div class="post-meta">
           <span>Essay</span>
@@ -112,8 +112,27 @@ async function validateContent() {
   try {
     const src = path.resolve('src/public/content.json');
     const raw = await fs.readFile(src, 'utf-8');
-    JSON.parse(raw);
+    const data = JSON.parse(raw);
     console.log('✅ Validated: src/public/content.json');
+
+    // Warn about locally-referenced thumbnails that don't exist yet.
+    const items = [
+      ...(data.essays || []),
+      ...(data.notes || []),
+      ...(data.media || []),
+    ];
+    for (const it of items) {
+      const t = it.thumbnail;
+      if (!t || !t.startsWith('/')) continue;
+      const p = path.resolve('src/public', t.replace(/^\//, ''));
+      try {
+        await fs.access(p);
+      } catch {
+        console.warn(
+          `⚠️  thumbnail not found for "${it.id || it.title}": ${t} (looked at ${p})`
+        );
+      }
+    }
   } catch (err) {
     console.warn('⚠️  content.json invalid or missing:', err.message);
   }
@@ -177,7 +196,7 @@ const MEDIA_SHELL = (item, playerHtml, extraHead = '', embedCss = '') => `<!DOCT
   <body>
     <main id="page-content" class="media-shell">
       <article class="media-page">
-        <a class="post-back" href="/#media">← Back</a>
+        <a class="post-back" href="/#media" data-back-link data-back-fallback="/#media">← Back</a>
 
         <header class="media-head">
           <span class="media-kind">${escapeHtml(KIND_LABEL[item.kind] || 'Media')}</span>
@@ -262,7 +281,6 @@ const MEDIA_SHELL = (item, playerHtml, extraHead = '', embedCss = '') => `<!DOCT
 
     <script type="module" src="/main.js"></script>
     <script type="module" src="/router.js"></script>
-    <script type="module" src="/media-player.js"></script>
   </body>
 </html>`;
 
@@ -303,12 +321,12 @@ function youtubeEmbedHtml(item) {
       <div class="media-embed-poster" role="button" tabindex="0"
            aria-label="Play video: ${escapeHtml(item.title)}"
            style="background-image: url('${escapeHtml(primary)}')">
-        <button class="media-play" type="button" aria-hidden="true">
+        <span class="media-play" aria-hidden="true">
           <svg viewBox="0 0 48 48" aria-hidden="true">
             <circle cx="24" cy="24" r="22" fill="rgba(11,13,24,0.65)" />
             <path d="M19 15 L19 33 L33 24 Z" fill="#fff"/>
           </svg>
-        </button>
+        </span>
       </div>
     </div>`;
 }

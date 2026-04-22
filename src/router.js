@@ -45,6 +45,64 @@ if ("scrollRestoration" in history) {
   history.scrollRestoration = "manual";
 }
 
+// ────────────────────────────────────────────────────────────
+// Breadcrumb stack
+//
+// We track the pages a visitor has navigated through within this
+// session so that the "← Back" links on posts / media / archive
+// actually take them to the referring page, not a hardcoded default.
+//
+// Stack semantics:
+//   - push() before every user-initiated forward navigation
+//   - pop() on popstate
+//   - back-link handlers peek() and route to that URL
+//
+// Stored in sessionStorage so a full refresh keeps context.
+// ────────────────────────────────────────────────────────────
+const BREADCRUMB_KEY = "rw:breadcrumbs";
+function loadCrumbs() {
+  try {
+    const raw = sessionStorage.getItem(BREADCRUMB_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+function saveCrumbs(arr) {
+  try {
+    sessionStorage.setItem(BREADCRUMB_KEY, JSON.stringify(arr.slice(-32)));
+  } catch {}
+}
+function pushCrumb(url) {
+  const arr = loadCrumbs();
+  // Don't record consecutive dupes.
+  if (arr[arr.length - 1] === url) return;
+  arr.push(url);
+  saveCrumbs(arr);
+}
+function popCrumb() {
+  const arr = loadCrumbs();
+  const last = arr.pop();
+  saveCrumbs(arr);
+  return last || null;
+}
+function peekCrumb() {
+  const arr = loadCrumbs();
+  return arr[arr.length - 1] || null;
+}
+function normalizeUrlForCrumb(href) {
+  try {
+    const u = new URL(href, location.origin);
+    if (u.origin !== location.origin) return null;
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return null;
+  }
+}
+
+// Exported via a data attribute so static HTML can find it.
+window.__rwPeekBack = () => peekCrumb();
+
 // pathname (without hash) → last-known scrollY at that URL.
 const scrollMap = new Map();
 
@@ -142,7 +200,16 @@ function ensureKleinJourney(frag) {
 async function navigate(url, { push = true, popstateState = null } = {}) {
   // Before swapping anything, capture the current page's scroll so that
   // returning here later lands where the user left.
-  if (push) rememberScroll(location.href);
+  if (push) {
+    rememberScroll(location.href);
+    // Record the page we're leaving so "Back" can return to it.
+    const crumb = normalizeUrlForCrumb(location.href);
+    if (crumb) pushCrumb(crumb);
+  } else {
+    // popstate — pop the top of the stack so back-links stay in sync
+    // with the browser's own back/forward traversal.
+    popCrumb();
+  }
 
   const txt = await (await fetch(url)).text();
   const frag = document.createRange().createContextualFragment(txt);
@@ -266,6 +333,20 @@ document.addEventListener("click", (e) => {
   // Outbound: decorate with UTM (covers links that ignored pointerdown,
   // e.g. keyboard activation).
   decorateOutbound(a);
+
+  // Smart back-link: data-back-link anchors go to the previous page in
+  // this session's breadcrumb stack when one exists, with the anchor's
+  // own href as the fallback. Lets a single `<a data-back-link href="/">`
+  // land the user wherever they actually came from.
+  if (a.dataset.backLink != null) {
+    e.preventDefault();
+    const prev = peekCrumb();
+    const dest = prev
+      ? new URL(prev, location.origin).toString()
+      : a.href;
+    navigate(dest);
+    return;
+  }
 
   if (a.target === "_blank") return;
 
