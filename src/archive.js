@@ -1,32 +1,69 @@
 // Live search + filter for the writing archive.
+//
+// Filter state is the URL's source of truth:
+//
+//   /writing?kind=essay&q=koopman&tag=ML&tag=Research
+//
+// That means:
+//   - the browser back/forward buttons traverse filter states
+//   - reloading the page preserves them
+//   - PJAX returning to /writing hydrates the same state without any
+//     in-memory session stash
+//   - you can share a filtered URL
 
 const state = {
   items: [],
   query: "",
   kind: "all",
   tags: new Set(),
-  bound: false,
 };
 
 export async function init() {
   const root = document.getElementById("archive-list");
   if (!root) return;
-  // Elements are swapped on PJAX, so always (re)bind to the current DOM.
+
   const content = await loadContent();
   state.items = normalize(content);
-  state.query = "";
-  state.kind = "all";
-  state.tags = new Set();
-  const search = document.getElementById("archive-search-input");
-  if (search) search.value = "";
+
+  hydrateFromUrl();
 
   renderTagFilters();
   bindControls();
   render();
 }
 
-// First-page load: run immediately.
 init();
+
+function hydrateFromUrl() {
+  const params = new URLSearchParams(location.search);
+  state.query = (params.get("q") || "").trim().toLowerCase();
+  state.kind = params.get("kind") || "all";
+  const tagVals = params.getAll("tag");
+  state.tags = new Set(tagVals);
+
+  // Echo state into the controls so what the user sees matches the URL.
+  const search = document.getElementById("archive-search-input");
+  if (search) search.value = state.query;
+  document.querySelectorAll(".archive-tab").forEach((tab) => {
+    const isActive = (tab.dataset.filter || "all") === state.kind;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+}
+
+function writeUrl({ replace = true } = {}) {
+  const params = new URLSearchParams();
+  if (state.kind && state.kind !== "all") params.set("kind", state.kind);
+  if (state.query) params.set("q", state.query);
+  Array.from(state.tags)
+    .sort()
+    .forEach((t) => params.append("tag", t));
+  const qs = params.toString();
+  const next = location.pathname + (qs ? `?${qs}` : "") + location.hash;
+  if (next === location.pathname + location.search + location.hash) return;
+  const method = replace ? "replaceState" : "pushState";
+  history[method]({ ...(history.state || {}) }, "", next);
+}
 
 async function loadContent() {
   try {
@@ -100,10 +137,12 @@ function renderTagFilters() {
     btn.type = "button";
     btn.dataset.tag = tag;
     btn.innerHTML = `${escapeHtml(tag)} <span class="archive-tag-count">${count}</span>`;
+    if (state.tags.has(tag)) btn.classList.add("is-active");
     btn.addEventListener("click", () => {
       if (state.tags.has(tag)) state.tags.delete(tag);
       else state.tags.add(tag);
       btn.classList.toggle("is-active", state.tags.has(tag));
+      writeUrl();
       render();
     });
     host.appendChild(btn);
@@ -115,6 +154,7 @@ function bindControls() {
   if (search) {
     search.addEventListener("input", () => {
       state.query = search.value.trim().toLowerCase();
+      writeUrl();
       render();
     });
   }
@@ -129,6 +169,7 @@ function bindControls() {
       tab.classList.add("is-active");
       tab.setAttribute("aria-selected", "true");
       state.kind = tab.dataset.filter || "all";
+      writeUrl();
       render();
     });
   });

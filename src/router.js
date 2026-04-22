@@ -197,6 +197,12 @@ function ensureKleinJourney(frag) {
  *
  * popstate: uses history.state.scroll if present, else the in-memory map.
  */
+// While a PJAX navigation is in flight we suspend the throttled scroll
+// listener below. Otherwise a scroll event fired by the innerHTML swap
+// (document shrinks, browser clamps scrollY) races ahead of pushState
+// and rewrites the OLD URL's stored scroll position to 0.
+let _navInFlight = false;
+
 async function navigate(url, { push = true, popstateState = null } = {}) {
   // Before swapping anything, capture the current page's scroll so that
   // returning here later lands where the user left.
@@ -211,13 +217,23 @@ async function navigate(url, { push = true, popstateState = null } = {}) {
     popCrumb();
   }
 
+  _navInFlight = true;
+
   const txt = await (await fetch(url)).text();
   const frag = document.createRange().createContextualFragment(txt);
   const next = frag.querySelector("#page-content");
 
   if (!next) {
+    _navInFlight = false;
     location.href = url;
     return;
+  }
+
+  // Flip the URL BEFORE the DOM swap so any scroll events emitted by
+  // the height change are attributed to the new URL, not the old one.
+  if (push) {
+    const initial = { scroll: null };
+    history.pushState(initial, "", url);
   }
 
   container.className = next.className || "";
@@ -231,11 +247,6 @@ async function navigate(url, { push = true, popstateState = null } = {}) {
     curFooter ? curFooter.replaceWith(newFooter) : container.after(newFooter);
   } else if (!newFooter && !curFooter && window.__globalFooterTemplate) {
     container.after(window.__globalFooterTemplate.cloneNode(true));
-  }
-
-  if (push) {
-    const initial = { scroll: null };
-    history.pushState(initial, "", url);
   }
 
   const home = isHomePath(url);
@@ -257,21 +268,27 @@ async function navigate(url, { push = true, popstateState = null } = {}) {
     if (u.hash) hashTarget = u.hash;
   } catch {}
 
+  // Fire pjax:navigated FIRST so listeners (archive.js) hydrate their
+  // state from the URL / inflate the list, which may change document
+  // height. Then restore scroll on the next frame so the target Y is
+  // valid against the final layout.
+  document.dispatchEvent(
+    new CustomEvent("pjax:navigated", { detail: { url } })
+  );
+
   requestAnimationFrame(() => {
-    if (typeof restoreY === "number") {
-      window.scrollTo(0, restoreY);
-    } else if (hashTarget) {
-      const el = document.querySelector(hashTarget);
-      if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
-      else window.scrollTo(0, 0);
-    } else {
-      window.scrollTo(0, 0);
-    }
-    // Let app code (home notes preview, archive) rebind itself on the
-    // newly-swapped DOM.
-    document.dispatchEvent(
-      new CustomEvent("pjax:navigated", { detail: { url } })
-    );
+    requestAnimationFrame(() => {
+      if (typeof restoreY === "number") {
+        window.scrollTo(0, restoreY);
+      } else if (hashTarget) {
+        const el = document.querySelector(hashTarget);
+        if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
+        else window.scrollTo(0, 0);
+      } else {
+        window.scrollTo(0, 0);
+      }
+      _navInFlight = false;
+    });
   });
 }
 
@@ -392,8 +409,14 @@ let scrollStoreTimer = 0;
 window.addEventListener(
   "scroll",
   () => {
+    // Do not record scroll during a PJAX transition — the document
+    // height is changing and scrollY is transient.
+    if (_navInFlight) return;
     clearTimeout(scrollStoreTimer);
-    scrollStoreTimer = setTimeout(() => rememberScroll(), 120);
+    scrollStoreTimer = setTimeout(() => {
+      if (_navInFlight) return;
+      rememberScroll();
+    }, 120);
   },
   { passive: true }
 );
