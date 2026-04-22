@@ -69,6 +69,7 @@ export class KleinScene {
     this.spinner = new THREE.Group();
     this.pivot.add(this.spinner);
 
+    this._buildEnvironment();
     this._buildLights();
     this._buildKlein();
     this._buildWireframeShell();
@@ -95,6 +96,56 @@ export class KleinScene {
     this.camera.aspect = w / Math.max(h, 1);
     this.camera.updateProjectionMatrix();
     this._needsRender = true;
+  }
+
+  _buildEnvironment() {
+    // A cheap procedural HDRI: paint a 4-stop radial gradient with some
+    // bright "light bars" onto a 2D canvas, push it through PMREM so
+    // MeshPhysicalMaterial can sample it for reflections / iridescence.
+    // The whole thing is done once at scene construction; no HDR asset
+    // download required.
+    const size = 256;
+    const cvs = document.createElement("canvas");
+    cvs.width = cvs.height = size;
+    const ctx = cvs.getContext("2d");
+
+    // Base sky gradient (top to bottom).
+    const sky = ctx.createLinearGradient(0, 0, 0, size);
+    sky.addColorStop(0, "#1c2a52");
+    sky.addColorStop(0.4, "#3a2460");
+    sky.addColorStop(0.7, "#120b20");
+    sky.addColorStop(1, "#05070e");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, size, size);
+
+    // A couple of soft light disks that give the iridescent surface
+    // distinct highlights.
+    const disks = [
+      { x: 0.28, y: 0.32, r: 0.18, color: "rgba(175, 210, 255, 0.95)" },
+      { x: 0.72, y: 0.40, r: 0.22, color: "rgba(255, 180, 200, 0.85)" },
+      { x: 0.55, y: 0.78, r: 0.28, color: "rgba(255, 220, 180, 0.6)" },
+    ];
+    for (const d of disks) {
+      const cx = d.x * size;
+      const cy = d.y * size;
+      const rad = d.r * size;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+      g.addColorStop(0, d.color);
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+    }
+
+    const tex = new THREE.CanvasTexture(cvs);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    tex.colorSpace = THREE.SRGBColorSpace;
+
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    pmrem.compileEquirectangularShader();
+    this.envTexture = pmrem.fromEquirectangular(tex).texture;
+    this.scene.environment = this.envTexture;
+    pmrem.dispose();
+    tex.dispose();
   }
 
   _buildLights() {
@@ -145,7 +196,7 @@ export class KleinScene {
       iridescenceIOR: 1.35,
       iridescenceThicknessRange: [120, 520],
       side: THREE.DoubleSide,
-      envMapIntensity: 1.1,
+      envMapIntensity: 1.25,
       transparent: true,
       opacity: 0.92,
     });

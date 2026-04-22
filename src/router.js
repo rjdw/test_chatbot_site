@@ -4,9 +4,40 @@
 // the exact card the user clicked from.
 // ────────────────────────────────────────────────────────────
 
-import { initKleinJourney } from "./klein/klein-journey.js";
-
 const container = document.getElementById("page-content");
+
+// The Klein journey module is loaded dynamically from main.js so that
+// blog / archive / post pages don't pay the Three.js bundle cost. When
+// the router injects the journey's DOM after a PJAX navigation we need
+// a handle to the same init, but via a dynamic import so the big chunk
+// stays separated.
+async function dynamicallyInitJourney(root) {
+  try {
+    // Low-power / no-WebGL devices get the lite variant.
+    const webglOk = (() => {
+      try {
+        const c = document.createElement("canvas");
+        return !!(c.getContext("webgl2") || c.getContext("webgl"));
+      } catch {
+        return false;
+      }
+    })();
+    const prefersReduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (!webglOk || prefersReduce) {
+      const { initKleinJourney } = await import(
+        "./klein/klein-journey-lite.js"
+      );
+      initKleinJourney(root);
+      return;
+    }
+    const { initKleinJourney } = await import("./klein/klein-journey.js");
+    initKleinJourney(root);
+  } catch (e) {
+    console.error("[router] journey init failed", e);
+  }
+}
 
 // Own scroll restoration; the default "auto" restoration fires before our
 // PJAX content swap finishes and is useless.
@@ -92,7 +123,7 @@ function ensureKleinJourney(frag) {
     if (clonedTail) clonedJourney.after(clonedTail);
   }
 
-  initKleinJourney(clonedJourney);
+  dynamicallyInitJourney(clonedJourney);
 }
 
 /**
@@ -162,16 +193,18 @@ async function navigate(url, { push = true, popstateState = null } = {}) {
   requestAnimationFrame(() => {
     if (typeof restoreY === "number") {
       window.scrollTo(0, restoreY);
-      return;
-    }
-    if (hashTarget) {
+    } else if (hashTarget) {
       const el = document.querySelector(hashTarget);
-      if (el) {
-        el.scrollIntoView({ behavior: "auto", block: "start" });
-        return;
-      }
+      if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
+      else window.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
     }
-    window.scrollTo(0, 0);
+    // Let app code (home notes preview, archive) rebind itself on the
+    // newly-swapped DOM.
+    document.dispatchEvent(
+      new CustomEvent("pjax:navigated", { detail: { url } })
+    );
   });
 }
 

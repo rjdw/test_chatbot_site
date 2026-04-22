@@ -106,12 +106,29 @@ async function processMarkdownFile(filePath) {
   };
 }
 
+async function copyContent() {
+  try {
+    const src = path.resolve('src/content.json');
+    const out = path.resolve('public/content.json');
+    const raw = await fs.readFile(src, 'utf-8');
+    // Validate JSON before shipping.
+    JSON.parse(raw);
+    await fs.mkdir(path.dirname(out), { recursive: true });
+    await fs.writeFile(out, raw);
+    console.log('✅ Copied: public/content.json');
+  } catch (err) {
+    console.warn('⚠️  content.json not copied:', err.message);
+  }
+}
+
 async function buildPosts() {
   console.log('🔨 Building blog posts from markdown...');
-  
+
+  await copyContent();
+
   // Find all markdown files in src/posts
   const markdownFiles = await fg('src/posts/**/*.md');
-  
+
   if (markdownFiles.length === 0) {
     console.log('📝 No markdown files found in src/posts/');
     return [];

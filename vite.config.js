@@ -22,6 +22,7 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "src/index.html"),
+        writing: resolve(__dirname, "src/writing.html"),
         ...postEntries(),
       },
       output: {
