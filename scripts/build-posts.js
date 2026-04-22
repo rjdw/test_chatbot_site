@@ -281,9 +281,15 @@ function youtubeEmbedHtml(item) {
   // hardcoding `origin` at build time (which breaks on preview URLs) and
   // sidesteps template-contents parsing quirks.
   const start = Number(item.startSeconds || 0);
-  const thumb =
+  // Prefer the author's explicit thumbnail; fall back to YouTube's
+  // maxresdefault (high quality, works for most YouTube Lives) with a
+  // runtime fallback to hqdefault in media-player.js if maxres 404s.
+  const primary =
     item.thumbnail ||
-    `https://i.ytimg.com/vi/${encodeURIComponent(item.videoId)}/hqdefault.jpg`;
+    `https://i.ytimg.com/vi/${encodeURIComponent(item.videoId)}/maxresdefault.jpg`;
+  const secondary = `https://i.ytimg.com/vi/${encodeURIComponent(
+    item.videoId
+  )}/hqdefault.jpg`;
   return `
     <div
       class="media-embed media-embed-youtube"
@@ -291,10 +297,12 @@ function youtubeEmbedHtml(item) {
       data-video-id="${escapeHtml(item.videoId)}"
       data-start="${start}"
       data-title="${escapeHtml(item.title)}"
+      data-thumb="${escapeHtml(primary)}"
+      data-thumb-fallback="${escapeHtml(secondary)}"
     >
       <div class="media-embed-poster" role="button" tabindex="0"
            aria-label="Play video: ${escapeHtml(item.title)}"
-           style="background-image: url('${escapeHtml(thumb)}')">
+           style="background-image: url('${escapeHtml(primary)}')">
         <button class="media-play" type="button" aria-hidden="true">
           <svg viewBox="0 0 48 48" aria-hidden="true">
             <circle cx="24" cy="24" r="22" fill="rgba(11,13,24,0.65)" />

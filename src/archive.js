@@ -222,9 +222,20 @@ function renderItem(it, index) {
     meta.push(`<span class="blog-tag">${escapeHtml(t)}</span>`);
   }
 
+  // Media rows use a thumbnail in place of the numeric index so the
+  // picture carries its weight in the list rhythm.
+  const thumb = mediaThumbnailFor(it);
+  const lead = thumb
+    ? `<span class="blog-entry-thumb" style="background-image:url('${attr(thumb)}')">
+         <span class="blog-entry-thumb-play" aria-hidden="true">
+           <svg viewBox="0 0 24 24"><path d="M8 5 L8 19 L19 12 Z" fill="#fff"/></svg>
+         </span>
+       </span>`
+    : `<span class="blog-entry-num">${num}</span>`;
+
   li.innerHTML = `
-    <${tag} class="blog-entry-link"${extraAttr}>
-      <span class="blog-entry-num">${num}</span>
+    <${tag} class="blog-entry-link${thumb ? " blog-entry-link--media" : ""}"${extraAttr}>
+      ${lead}
       <div class="blog-entry-body">
         <h3 class="blog-entry-title">${escapeHtml(it.title || "")}</h3>
         ${
@@ -238,6 +249,15 @@ function renderItem(it, index) {
     </${tag}>
   `;
   return li;
+}
+
+function mediaThumbnailFor(it) {
+  if (it.kind !== "media") return null;
+  if (it.thumbnail) return it.thumbnail;
+  if (it.source === "youtube" && it.videoId) {
+    return `https://i.ytimg.com/vi/${encodeURIComponent(it.videoId)}/hqdefault.jpg`;
+  }
+  return null;
 }
 
 function formatDate(iso) {

@@ -22,6 +22,24 @@ function setupEmbed(embed) {
   const videoId = embed.dataset.videoId || "";
   const initialStart = Number(embed.dataset.start || 0);
   const title = embed.dataset.title || "Embedded video";
+  const primaryThumb = embed.dataset.thumb;
+  const fallbackThumb = embed.dataset.thumbFallback;
+
+  // YouTube's /maxresdefault.jpg 404s for any video whose source was
+  // <1280x720. We probe it once; if it misses, drop to /hqdefault.jpg.
+  if (primaryThumb && fallbackThumb && primaryThumb !== fallbackThumb) {
+    const probe = new Image();
+    probe.onload = () => {
+      // maxres returns a 120×90 placeholder when missing; detect it.
+      if (probe.naturalWidth <= 120) {
+        poster.style.backgroundImage = `url('${fallbackThumb}')`;
+      }
+    };
+    probe.onerror = () => {
+      poster.style.backgroundImage = `url('${fallbackThumb}')`;
+    };
+    probe.src = primaryThumb;
+  }
 
   let iframe = null;
   let player = null;

@@ -30,6 +30,75 @@ async function renderHomeEssays() {
   host.innerHTML = pick.map((e, i) => entryCard(e, i)).join("");
 }
 
+function mediaSlug(m) {
+  return (
+    m.slug ||
+    (m.id || m.title || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+  );
+}
+
+function mediaThumbnail(m) {
+  if (m.thumbnail) return m.thumbnail;
+  if (m.source === "youtube" && m.videoId) {
+    // hqdefault is the most reliable YouTube fallback — maxresdefault
+    // 404s for videos that weren't uploaded at >=1280x720.
+    return `https://i.ytimg.com/vi/${encodeURIComponent(m.videoId)}/hqdefault.jpg`;
+  }
+  return null;
+}
+
+function mediaKindLabel(m) {
+  return (
+    { video: "Video", podcast: "Podcast", talk: "Talk" }[m.kind] || "Media"
+  );
+}
+
+function mediaCardHtml(m, { variant = "grid" } = {}) {
+  const slug = mediaSlug(m);
+  const href = slug ? `/media/${slug}` : "#";
+  const thumb = mediaThumbnail(m);
+  const date = m.date
+    ? new Date(m.date).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "";
+  const tags = (m.tags || [])
+    .slice(0, 2)
+    .map((t) => `<span class="blog-tag">${escapeHtml(t)}</span>`)
+    .join("");
+  const meta = [
+    `<span class="media-card-kind">${mediaKindLabel(m)}</span>`,
+    m.venue ? `<span>${escapeHtml(m.venue)}</span>` : "",
+    date ? `<span>·</span><span>${date}</span>` : "",
+  ]
+    .filter(Boolean)
+    .join("");
+  const thumbBlock = thumb
+    ? `<span class="media-card-thumb" style="background-image:url('${attr(thumb)}')">
+         <span class="media-card-play" aria-hidden="true">
+           <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="rgba(11,13,24,0.72)"/><path d="M19 15 L19 33 L33 24 Z" fill="#fff"/></svg>
+         </span>
+       </span>`
+    : `<span class="media-card-thumb media-card-thumb--empty"></span>`;
+  return `
+    <li class="media-card media-card--${variant}">
+      <a class="media-card-link" href="${attr(href)}">
+        ${thumbBlock}
+        <span class="media-card-body">
+          <span class="media-card-meta">${meta}</span>
+          <span class="media-card-title">${escapeHtml(m.title || "")}</span>
+          ${m.description ? `<span class="media-card-desc">${escapeHtml(m.description)}</span>` : ""}
+          ${tags ? `<span class="media-card-tags">${tags}</span>` : ""}
+        </span>
+      </a>
+    </li>`;
+}
+
 async function renderHomeMedia() {
   const host = document.getElementById("home-media-list");
   if (!host) return;
@@ -37,34 +106,23 @@ async function renderHomeMedia() {
   const media = (data.media || [])
     .slice()
     .sort((a, b) => (Date.parse(b.date || 0) || 0) - (Date.parse(a.date || 0) || 0))
-    .slice(0, 3);
+    .slice(0, 5);
   if (media.length === 0) {
     host.innerHTML = `
-      <li class="blog-entry is-draft">
-        <div class="blog-entry-link">
-          <span class="blog-entry-num">—</span>
-          <div class="blog-entry-body">
-            <h3 class="blog-entry-title">First media appearance coming soon</h3>
-            <p class="blog-entry-desc">Videos, talks, and podcasts will show up here.</p>
-          </div>
+      <li class="media-card media-card--empty">
+        <div class="media-card-body">
+          <span class="media-card-title">First media appearance coming soon</span>
+          <span class="media-card-desc">Videos, talks, and podcasts will show up here.</span>
         </div>
       </li>`;
+    host.className = "media-grid media-grid--empty";
     return;
   }
-  host.innerHTML = media
-    .map((m, i) => {
-      const slug =
-        m.slug ||
-        (m.id || m.title || "")
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "");
-      return entryCard(
-        { ...m, href: slug ? `/media/${slug}` : m.href || "#", external: false },
-        i
-      );
-    })
-    .join("");
+  host.className = media.length === 1 ? "media-grid media-grid--single" : "media-grid";
+  const [hero, ...rest] = media;
+  host.innerHTML =
+    mediaCardHtml(hero, { variant: "hero" }) +
+    rest.map((m) => mediaCardHtml(m, { variant: "grid" })).join("");
 }
 
 async function renderHomeNotes() {
