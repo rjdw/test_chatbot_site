@@ -276,30 +276,21 @@ function formatSeconds(s) {
 }
 
 function youtubeEmbedHtml(item) {
-  // Use the privacy-enhanced domain (youtube-nocookie.com) and the
-  // youtube /live/ path so live-stream VODs render correctly.  Start
-  // time is applied via ?start=.  rel=0 keeps suggested videos in the
-  // creator's channel only.
+  // The video-id and start time live as data-* on the wrapper; the
+  // runtime (media-player.js) composes the final iframe URL. This avoids
+  // hardcoding `origin` at build time (which breaks on preview URLs) and
+  // sidesteps template-contents parsing quirks.
   const start = Number(item.startSeconds || 0);
-  const params = new URLSearchParams({
-    rel: '0',
-    modestbranding: '1',
-    enablejsapi: '1',
-    playsinline: '1',
-    origin: 'https://richardjdwang.com',
-  });
-  if (start > 0) params.set('start', String(start));
-  const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(
-    item.videoId
-  )}?${params.toString()}`;
-  const thumb = item.thumbnail ||
-    `https://i.ytimg.com/vi/${encodeURIComponent(item.videoId)}/maxresdefault.jpg`;
+  const thumb =
+    item.thumbnail ||
+    `https://i.ytimg.com/vi/${encodeURIComponent(item.videoId)}/hqdefault.jpg`;
   return `
     <div
       class="media-embed media-embed-youtube"
       data-provider="youtube"
       data-video-id="${escapeHtml(item.videoId)}"
       data-start="${start}"
+      data-title="${escapeHtml(item.title)}"
     >
       <div class="media-embed-poster" role="button" tabindex="0"
            aria-label="Play video: ${escapeHtml(item.title)}"
@@ -311,7 +302,6 @@ function youtubeEmbedHtml(item) {
           </svg>
         </button>
       </div>
-      <template class="media-embed-src">${escapeHtml(src)}</template>
     </div>`;
 }
 
