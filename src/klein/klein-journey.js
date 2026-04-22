@@ -131,8 +131,9 @@ export function initKleinJourney(root) {
       const isActive = i === activeIdx;
       el.classList.toggle("is-active", isActive);
       el.style.pointerEvents = isActive ? "auto" : "none";
-      const parallax = (p - step) * 22;
-      el.style.transform = `translate3d(0, ${parallax.toFixed(2)}px, 0)`;
+      // Deliberately no transform: promoting the chapter to a GPU
+      // compositor layer softens its text. The discrete snap-to-chapter
+      // behaviour already removes the need for a parallax cue.
     });
 
     stepDots.forEach((dot, i) => {

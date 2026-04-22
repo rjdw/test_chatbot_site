@@ -184,10 +184,17 @@
        click-through by default. The JS flips this to `auto` only on
        the currently-visible chapter. */
     pointer-events: none;
-    transition: opacity 400ms ease, transform 400ms ease;
-    will-change: opacity, transform;
+    transition: opacity 450ms ease;
     text-align: left;
-    text-shadow: 0 1px 24px rgba(0, 0, 0, 0.45);
+    /* Keep text crisp. translate3d + will-change forces a compositor
+       layer whose sub-pixel rasterisation makes Fraunces and Inter look
+       soft on HiDPI. A small text-shadow (blur ≤ 6 px) for legibility
+       over the 3D canvas is fine; the previous 24 px blur was the
+       cause of the 'pixelated' look the user flagged. */
+    text-shadow: 0 1px 6px rgba(5, 6, 10, 0.45);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   .klein-chapter.is-active {
     pointer-events: auto;
