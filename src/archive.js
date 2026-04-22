@@ -39,13 +39,27 @@ async function loadContent() {
   }
 }
 
-function normalize({ essays = [], notes = [], drafts = [] }) {
+function normalize({ essays = [], notes = [], drafts = [], media = [] }) {
   const items = [];
   for (const e of essays) {
     items.push({ ...e, kind: "essay" });
   }
   for (const n of notes) {
     items.push({ ...n, kind: "note" });
+  }
+  for (const m of media) {
+    const slug =
+      m.slug ||
+      (m.id || m.title || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    items.push({
+      ...m,
+      kind: "media",
+      href: m.href || (slug ? `/media/${slug}` : null),
+      external: false,
+    });
   }
   for (const d of drafts) {
     items.push({
@@ -199,6 +213,8 @@ function renderItem(it, index) {
         ? "Note"
         : it.kind === "essay"
         ? "Essay"
+        : it.kind === "media"
+        ? "Media"
         : null;
     if (kindLabel) meta.push(`<span class="archive-kind">${kindLabel}</span>`);
   }

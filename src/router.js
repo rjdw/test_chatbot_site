@@ -216,9 +216,58 @@ function scrollToHash(hash) {
   return true;
 }
 
+// Domains that should receive UTM decoration on outbound clicks. These
+// are sites where I want analytics to credit richardjdwang.com as the
+// referring source (beyond the browser's Referer header, which only
+// sends the origin under strict-origin-when-cross-origin).
+const UTM_HOSTS = new Set([
+  "cladlabs.ai",
+  "www.cladlabs.ai",
+  "useclad.ai",
+  "www.useclad.ai",
+]);
+
+function decorateOutbound(a) {
+  if (a.dataset.utmApplied === "1") return;
+  const href = a.getAttribute("href");
+  if (!href) return;
+  let u;
+  try {
+    u = new URL(href, location.origin);
+  } catch {
+    return;
+  }
+  if (u.origin === location.origin) return;
+  if (!UTM_HOSTS.has(u.hostname)) return;
+  // Respect hand-set utm params; only fill in what's missing.
+  if (!u.searchParams.has("utm_source"))
+    u.searchParams.set("utm_source", "richardjdwang.com");
+  if (!u.searchParams.has("utm_medium"))
+    u.searchParams.set("utm_medium", "referral");
+  if (!u.searchParams.has("utm_campaign"))
+    u.searchParams.set("utm_campaign", "personal_site");
+  a.href = u.toString();
+  a.dataset.utmApplied = "1";
+}
+
+document.addEventListener(
+  "pointerdown",
+  (e) => {
+    const a = e.target.closest && e.target.closest("a[href]");
+    if (a) decorateOutbound(a);
+  },
+  true
+);
+
 document.addEventListener("click", (e) => {
   const a = e.target.closest("a[href]");
-  if (!a || a.target === "_blank") return;
+  if (!a) return;
+
+  // Outbound: decorate with UTM (covers links that ignored pointerdown,
+  // e.g. keyboard activation).
+  decorateOutbound(a);
+
+  if (a.target === "_blank") return;
 
   // In-page anchors.
   if (

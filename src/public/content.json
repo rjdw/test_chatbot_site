@@ -133,6 +133,23 @@
       "tags": ["Applied AI"]
     }
   ],
+  "media": [
+    {
+      "id": "tbpn-yc-demo-day-dec-2025",
+      "kind": "video",
+      "source": "youtube",
+      "videoId": "dAmGwYH4d74",
+      "startSeconds": 3882,
+      "liveUrl": "https://www.youtube.com/live/dAmGwYH4d74?si=CyjdB9b7Os9sWolZ&t=3882",
+      "title": "TBPN — YC Demo Day with Paul Graham",
+      "venue": "TBPN",
+      "venueUrl": "https://www.youtube.com/@TBPNLive",
+      "description": "Live on TBPN during Y Combinator F25 Demo Day. Clad Labs featured in the show's coverage of the batch alongside Paul Graham.",
+      "date": "2025-12-03",
+      "duration": "1:04:42 in",
+      "tags": ["Media", "TBPN", "YC", "Clad Labs"]
+    }
+  ],
   "notes": [
     {
       "id": "launching-clad-labs",

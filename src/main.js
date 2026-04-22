@@ -30,6 +30,43 @@ async function renderHomeEssays() {
   host.innerHTML = pick.map((e, i) => entryCard(e, i)).join("");
 }
 
+async function renderHomeMedia() {
+  const host = document.getElementById("home-media-list");
+  if (!host) return;
+  const data = await loadContent();
+  const media = (data.media || [])
+    .slice()
+    .sort((a, b) => (Date.parse(b.date || 0) || 0) - (Date.parse(a.date || 0) || 0))
+    .slice(0, 3);
+  if (media.length === 0) {
+    host.innerHTML = `
+      <li class="blog-entry is-draft">
+        <div class="blog-entry-link">
+          <span class="blog-entry-num">—</span>
+          <div class="blog-entry-body">
+            <h3 class="blog-entry-title">First media appearance coming soon</h3>
+            <p class="blog-entry-desc">Videos, talks, and podcasts will show up here.</p>
+          </div>
+        </div>
+      </li>`;
+    return;
+  }
+  host.innerHTML = media
+    .map((m, i) => {
+      const slug =
+        m.slug ||
+        (m.id || m.title || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+      return entryCard(
+        { ...m, href: slug ? `/media/${slug}` : m.href || "#", external: false },
+        i
+      );
+    })
+    .join("");
+}
+
 async function renderHomeNotes() {
   const host = document.getElementById("home-notes-list");
   if (!host) return;
@@ -212,6 +249,7 @@ async function bootArchiveIfPresent() {
 function boot() {
   bootKlein();
   renderHomeEssays();
+  renderHomeMedia();
   renderHomeNotes();
   bootArchiveIfPresent();
 }
@@ -220,6 +258,7 @@ function boot() {
 document.addEventListener("pjax:navigated", () => {
   _contentCache = null; // allow fresh data on nav
   renderHomeEssays();
+  renderHomeMedia();
   renderHomeNotes();
   bootArchiveIfPresent();
 });
