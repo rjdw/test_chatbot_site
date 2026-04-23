@@ -1,4 +1,14 @@
-import "./chat/widget-loader.js";
+// Defer the chat widget until the browser is idle post-first-paint.
+// It pulls in marked + DOMPurify + axios + Tailwind-in-shadow-DOM, all
+// non-critical. Loading it inline on main.js caused ~200 ms of JS parse
+// on first load that was competing with the Klein journey's WebGL
+// bootstrap.
+const loadChatWhenIdle = () => import("./chat/widget-loader.js");
+if ("requestIdleCallback" in window) {
+  window.requestIdleCallback(loadChatWhenIdle, { timeout: 3000 });
+} else {
+  setTimeout(loadChatWhenIdle, 1500);
+}
 
 // ────────────────────────────────────────────────────────────
 // Home notes preview (populated from /content.json)

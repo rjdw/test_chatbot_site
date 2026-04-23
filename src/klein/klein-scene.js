@@ -372,7 +372,29 @@ export class KleinScene {
       this._raf = requestAnimationFrame(loop);
       this._tick();
     };
-    loop();
+
+    // Ask the driver to compile shaders on a worker thread (if
+    // KHR_parallel_shader_compile is available). Without this, the
+    // MeshPhysicalMaterial (iridescence + transmission + clearcoat
+    // + our onBeforeCompile patch) compiles synchronously on the
+    // first render, blocking the main thread for hundreds of ms and
+    // stalling scroll on first load. Subsequent loads hit the shader
+    // cache so the lag isn't visible.
+    if (this.renderer.compileAsync) {
+      this.renderer
+        .compileAsync(this.scene, this.camera)
+        .finally(loop);
+    } else if (this.renderer.compile) {
+      // Best-effort sync pre-compile; still runs on main thread but at
+      // least front-loads the cost to setup rather than the first
+      // rAF tick.
+      try {
+        this.renderer.compile(this.scene, this.camera);
+      } catch {}
+      loop();
+    } else {
+      loop();
+    }
   }
 
   stop() {

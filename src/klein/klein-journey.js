@@ -106,39 +106,50 @@ export function initKleinJourney(root) {
   // Rendering overlay updates
   // ────────────────────────────────────────────────────────────────
 
+  // Trackpads fire `scroll` at ~120 Hz; coalesce to the next animation
+  // frame so we do at most one overlay DOM update per paint.
+  let _scrollRaf = 0;
+  let _lastOverlayActiveIdx = -1;
   const onScroll = () => {
-    const { p } = journeyMetrics();
-    scene.setProgress(p);
-    updateOverlay(p);
-    scheduleIdleSnap();
+    if (_scrollRaf) return;
+    _scrollRaf = requestAnimationFrame(() => {
+      _scrollRaf = 0;
+      const { p } = journeyMetrics();
+      scene.setProgress(p);
+      updateOverlay(p);
+      scheduleIdleSnap();
+    });
   };
 
   const updateOverlay = (p) => {
     if (progressBar) progressBar.style.transform = `scaleY(${p})`;
     if (progressLabel) progressLabel.textContent = formatProgress(p);
 
-    // Which chapter is visually in front right now? (Nearest by step).
     const activeIdx = nearestStepIdx(p);
     const window0 = 1 / Math.max(chapters.length - 1, 1);
+    const activeChanged = activeIdx !== _lastOverlayActiveIdx;
+
+    // Opacity still has to update continuously to drive the cross-fade,
+    // but pointer-events / is-active / dot classes only flip at the
+    // chapter boundary. Skip those writes in between.
     chapters.forEach((el, i) => {
       const step = stepFracs[i];
       const d = Math.abs(p - step);
       const opacity = Math.max(0, 1 - d / (window0 * 0.75));
       el.style.opacity = String(opacity);
-      // Only the active chapter can receive clicks, so the invisible
-      // chapters stacked in the same spot never steal input from the
-      // one the user is reading.
-      const isActive = i === activeIdx;
-      el.classList.toggle("is-active", isActive);
-      el.style.pointerEvents = isActive ? "auto" : "none";
-      // Deliberately no transform: promoting the chapter to a GPU
-      // compositor layer softens its text. The discrete snap-to-chapter
-      // behaviour already removes the need for a parallax cue.
+      if (activeChanged) {
+        const isActive = i === activeIdx;
+        el.classList.toggle("is-active", isActive);
+        el.style.pointerEvents = isActive ? "auto" : "none";
+      }
     });
 
-    stepDots.forEach((dot, i) => {
-      dot.classList.toggle("is-active", i === activeIdx);
-    });
+    if (activeChanged) {
+      stepDots.forEach((dot, i) => {
+        dot.classList.toggle("is-active", i === activeIdx);
+      });
+      _lastOverlayActiveIdx = activeIdx;
+    }
   };
 
   // ────────────────────────────────────────────────────────────────
@@ -274,11 +285,28 @@ export function initKleinJourney(root) {
     }
   };
 
-  window.addEventListener("wheel", onWheel, { passive: false });
-  window.addEventListener("touchstart", onTouchStart, { passive: true });
-  window.addEventListener("touchmove", onTouchMove, { passive: false });
-  window.addEventListener("touchend", onTouchEnd, { passive: true });
-  window.addEventListener("keydown", onKey);
+  // Only attach the non-passive wheel/touch interceptors while the
+  // journey is on-screen. Outside that window they are pure scroll-
+  // blocking overhead for the rest of the site.
+  let _inputAttached = false;
+  const attachInputListeners = () => {
+    if (_inputAttached) return;
+    _inputAttached = true;
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("keydown", onKey);
+  };
+  const detachInputListeners = () => {
+    if (!_inputAttached) return;
+    _inputAttached = false;
+    window.removeEventListener("wheel", onWheel);
+    window.removeEventListener("touchstart", onTouchStart);
+    window.removeEventListener("touchmove", onTouchMove);
+    window.removeEventListener("touchend", onTouchEnd);
+    window.removeEventListener("keydown", onKey);
+  };
 
   // ────────────────────────────────────────────────────────────────
   // Idle-snap fallback
@@ -306,11 +334,19 @@ export function initKleinJourney(root) {
   window.addEventListener("resize", onScroll, { passive: true });
 
   // Pause the render loop entirely when the section is off-screen.
+  // Runs the scene only while on-screen, and attaches the non-passive
+  // wheel/touch listeners only while the journey is actually pinned —
+  // not on every other page.
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
-        if (e.isIntersecting) scene.start();
-        else scene.stop();
+        if (e.isIntersecting) {
+          scene.start();
+          attachInputListeners();
+        } else {
+          scene.stop();
+          detachInputListeners();
+        }
       }
     },
     { threshold: 0 }
@@ -320,12 +356,9 @@ export function initKleinJourney(root) {
   return {
     dispose() {
       io.disconnect();
+      detachInputListeners();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("keydown", onKey);
       clearTimeout(scrollIdleTimer);
       scene.dispose();
