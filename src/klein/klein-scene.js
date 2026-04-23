@@ -236,21 +236,14 @@ export class KleinScene {
         .replace(
           "#include <color_fragment>",
           `#include <color_fragment>
-           // Cyclic cosine-basis gradient across the 4 palette stops.
-           //   w_k = 0.5 + 0.5·cos(θ − kπ/2)
-           // These four weights sum to a constant 2 (cosines at
-           // quadrature cancel), so brightness never fluctuates and
-           // the palette cycles smoothly through A→B→C→D→A with no
-           // seam anywhere. One full cycle per 2π of vKleinUv.y, which
-           // matches the Klein bottle's natural v-periodicity.
-           float theta = (vKleinUv.y + uProgress) * 6.2831853;
-           float w0 = 0.5 + 0.5 * cos(theta);
-           float w1 = 0.5 + 0.5 * cos(theta - 1.5707963);
-           float w2 = 0.5 + 0.5 * cos(theta - 3.1415926);
-           float w3 = 0.5 + 0.5 * cos(theta - 4.7123889);
-           vec3 grad = (w0 * uColorA + w1 * uColorB
-                      + w2 * uColorC + w3 * uColorD) * 0.5;
-           diffuseColor.rgb = mix(diffuseColor.rgb * grad * 1.1, grad, 0.55);`
+           float ribbons = 0.5 + 0.5 * sin(vKleinUv.y * 40.0 + uProgress * 12.566);
+           ribbons = smoothstep(0.55, 0.98, ribbons);
+           float band = fract(vKleinUv.y * 2.0 + uProgress);
+           vec3 grad = mix(uColorA, uColorB, smoothstep(0.0, 0.5, band));
+           grad = mix(grad, uColorC, smoothstep(0.5, 0.8, band));
+           grad = mix(grad, uColorD, smoothstep(0.8, 1.0, band));
+           diffuseColor.rgb = mix(diffuseColor.rgb * grad * 1.1, grad, 0.55);
+           diffuseColor.rgb += ribbons * 0.12 * grad;`
         );
     };
 
