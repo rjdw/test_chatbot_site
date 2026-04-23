@@ -238,10 +238,18 @@ export class KleinScene {
           `#include <color_fragment>
            float ribbons = 0.5 + 0.5 * sin(vKleinUv.y * 40.0 + uProgress * 12.566);
            ribbons = smoothstep(0.55, 0.98, ribbons);
-           float band = fract(vKleinUv.y * 2.0 + uProgress);
-           vec3 grad = mix(uColorA, uColorB, smoothstep(0.0, 0.5, band));
-           grad = mix(grad, uColorC, smoothstep(0.5, 0.8, band));
-           grad = mix(grad, uColorD, smoothstep(0.8, 1.0, band));
+           // One full palette cycle per revolution so the loop is
+           // genuinely closed (two cycles would double the color speed
+           // but also need two closing D→A mixes; one reads cleaner).
+           float band = fract(vKleinUv.y + uProgress);
+           // 4 equal sectors of width 0.25 covering A→B→C→D→A. The
+           // final mix closes the loop so there's no seam where fract
+           // wraps from 1 back to 0.
+           vec3 grad = uColorA;
+           grad = mix(grad, uColorB, smoothstep(0.00, 0.25, band));
+           grad = mix(grad, uColorC, smoothstep(0.25, 0.50, band));
+           grad = mix(grad, uColorD, smoothstep(0.50, 0.75, band));
+           grad = mix(grad, uColorA, smoothstep(0.75, 1.00, band));
            diffuseColor.rgb = mix(diffuseColor.rgb * grad * 1.1, grad, 0.55);
            diffuseColor.rgb += ribbons * 0.12 * grad;`
         );
