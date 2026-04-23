@@ -21,6 +21,10 @@ const POST_TEMPLATE = `<!DOCTYPE html>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="google-adsense-account" content="ca-pub-5642788581103145" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#000000" />
     <title>{{TITLE}} — Richard Wang</title>
     <link
       rel="stylesheet"
@@ -106,6 +110,39 @@ async function processMarkdownFile(filePath) {
   };
 }
 
+async function regenerateFavicons() {
+  // Rebuild the PNG favicons from favicon.svg whenever the SVG is newer
+  // (or the PNGs don't exist yet). Keeps checked-in assets in sync
+  // without requiring devs to remember an extra command.
+  try {
+    const svgPath = path.resolve('src/public/favicon.svg');
+    const svgStat = await fs.stat(svgPath);
+    const pngPath = path.resolve('src/public/favicon-512.png');
+    let pngMtime = 0;
+    try {
+      pngMtime = (await fs.stat(pngPath)).mtimeMs;
+    } catch {}
+    if (pngMtime && pngMtime >= svgStat.mtimeMs) return;
+
+    const { default: sharp } = await import('sharp');
+    const svg = await fs.readFile(svgPath);
+    for (const size of [32, 180, 512]) {
+      const buf = await sharp(svg, { density: 384 })
+        .resize(size, size)
+        .png()
+        .toBuffer();
+      await fs.writeFile(path.resolve(`src/public/favicon-${size}.png`), buf);
+    }
+    await fs.writeFile(
+      path.resolve('src/public/apple-touch-icon.png'),
+      await sharp(svg, { density: 384 }).resize(180, 180).png().toBuffer()
+    );
+    console.log('✅ Regenerated favicon PNGs');
+  } catch (err) {
+    console.warn('⚠️  Favicon regeneration skipped:', err.message);
+  }
+}
+
 async function validateContent() {
   // content.json now lives in src/public/ so Vite copies it verbatim.
   // We only need to validate the JSON here to catch errors early.
@@ -179,6 +216,10 @@ const MEDIA_SHELL = (item, playerHtml, extraHead = '', embedCss = '') => `<!DOCT
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="google-adsense-account" content="ca-pub-5642788581103145" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#000000" />
     <title>${escapeHtml(item.title)} — Richard Wang</title>
     <meta name="description" content="${escapeHtml(item.description || '')}" />
     <meta property="og:title" content="${escapeHtml(item.title)}" />
@@ -377,6 +418,7 @@ async function buildMedia() {
 async function buildPosts() {
   console.log('🔨 Building blog posts from markdown...');
 
+  await regenerateFavicons();
   await validateContent();
   await buildMedia();
 
