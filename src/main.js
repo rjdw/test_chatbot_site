@@ -121,10 +121,25 @@ async function renderHomeMedia() {
   const host = document.getElementById("home-media-list");
   if (!host) return;
   const data = await loadContent();
-  const media = (data.media || [])
+  const all = (data.media || [])
     .slice()
-    .sort((a, b) => (Date.parse(b.date || 0) || 0) - (Date.parse(a.date || 0) || 0))
-    .slice(0, 5);
+    .sort(
+      (a, b) =>
+        (Date.parse(b.date || 0) || 0) - (Date.parse(a.date || 0) || 0)
+    );
+  // Pinning: any media entry with `featured: true` is promoted to the
+  // hero slot. If multiple are featured, the most recent among them
+  // wins (date-desc above already handles that). If none are featured,
+  // fall back to the most recent overall.
+  const featuredIdx = all.findIndex((m) => m.featured);
+  let media;
+  if (featuredIdx >= 0) {
+    const hero = all[featuredIdx];
+    const rest = all.filter((_, i) => i !== featuredIdx);
+    media = [hero, ...rest].slice(0, 5);
+  } else {
+    media = all.slice(0, 5);
+  }
   if (media.length === 0) {
     host.innerHTML = `
       <li class="media-card media-card--empty">

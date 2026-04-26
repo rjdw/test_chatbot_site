@@ -195,7 +195,8 @@
       "date": "2025-12-02",
       "duration": "1:04:42 in",
       "thumbnail": "/media-thumbs/tbpn-yc-demo-day-dec-2025.jpg",
-      "tags": ["Media", "TBPN", "YC", "Clad Labs"]
+      "tags": ["Media", "TBPN", "YC", "Clad Labs"],
+      "featured": true
     }
   ],
   "notes": [
