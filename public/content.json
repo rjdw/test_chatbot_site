@@ -1,0 +1,224 @@
+{
+  "essays": [
+    {
+      "id": "what-is-agentic-customer-support",
+      "title": "What is agentic customer support?",
+      "description": "The shift from reactive ticket-by-ticket support to proactive, AI-driven support that monitors, anticipates, and resolves issues before customers notice.",
+      "date": "2026-03-31",
+      "readTime": "10 min read",
+      "tags": ["AI", "Support", "Industry"],
+      "href": "https://www.useclad.ai/blog/agentic-customer-support",
+      "external": true,
+      "featured": true,
+      "source": "useclad.ai"
+    },
+    {
+      "id": "tickets-to-signals",
+      "title": "From tickets to signals: how account intelligence changes support",
+      "description": "Your support conversations already contain the signals you need to predict churn, spot upsell opportunities, and keep accounts healthy.",
+      "date": "2026-02-24",
+      "readTime": "7 min read",
+      "tags": ["Product", "Support"],
+      "href": "https://www.useclad.ai/blog/account-intelligence",
+      "external": true,
+      "featured": false,
+      "source": "useclad.ai"
+    },
+    {
+      "id": "startup-support-ai-advantage",
+      "title": "How AI gives startup support teams an unfair advantage",
+      "description": "Lean teams can't hire their way out of growing ticket volume. With the right AI tools, a 3-person team delivers the service of 30.",
+      "date": "2026-02-03",
+      "readTime": "7 min read",
+      "tags": ["AI", "Startups", "Industry"],
+      "href": "https://www.useclad.ai/blog/ai-startup-advantage",
+      "external": true,
+      "featured": false,
+      "source": "useclad.ai"
+    },
+    {
+      "id": "build-vs-buy-ai-support",
+      "title": "Build vs. buy: the real cost of rolling your own AI support agent",
+      "description": "Foundation models are everywhere and building your own agent feels doable. The hidden costs add up faster than most teams expect.",
+      "date": "2026-01-06",
+      "readTime": "9 min read",
+      "tags": ["AI", "Industry"],
+      "href": "https://www.useclad.ai/blog/build-vs-buy-ai",
+      "external": true,
+      "featured": false,
+      "source": "useclad.ai"
+    },
+    {
+      "id": "introducing-clad-labs",
+      "title": "Chad by Clad Labs: the brainrot IDE",
+      "description": "Announcing Chad — a tongue-in-cheek IDE that looks at what happens when AI-assisted coding meets every productivity antipattern at once.",
+      "date": "2025-10-15",
+      "readTime": "6 min read",
+      "tags": ["Product", "Clad Labs"],
+      "href": "https://www.cladlabs.ai/blog/introducing-clad-labs",
+      "external": true,
+      "featured": false,
+      "source": "cladlabs.ai"
+    },
+    {
+      "id": "ai-code-review",
+      "title": "How AI is transforming code review",
+      "description": "Transformer-based code review architectures, RLHF training pipelines, incremental stateful analysis, and production metrics showing 85–92% bug detection rates.",
+      "date": "2025-09-28",
+      "readTime": "7 min read",
+      "tags": ["AI", "Research", "DX"],
+      "href": "https://www.cladlabs.ai/blog/ai-code-review",
+      "external": true,
+      "featured": true,
+      "source": "cladlabs.ai"
+    },
+    {
+      "id": "ai-development-best-practices",
+      "title": "Best practices for AI-assisted development",
+      "description": "Proven strategies for prompts, security, testing, and skill development when working with AI coding assistants.",
+      "date": "2025-09-10",
+      "readTime": "8 min read",
+      "tags": ["Resources", "DX"],
+      "href": "https://www.cladlabs.ai/blog/ai-development-best-practices",
+      "external": true,
+      "featured": false,
+      "source": "cladlabs.ai"
+    },
+    {
+      "id": "context-management",
+      "title": "Advanced context management for code generation",
+      "description": "Merkle trees, AST-based chunking, and vector databases that enable efficient code context at repository scale.",
+      "date": "2025-08-22",
+      "readTime": "10 min read",
+      "tags": ["Retrieval", "Research", "Infrastructure"],
+      "href": "https://www.cladlabs.ai/blog/intelligent-code-completion",
+      "external": true,
+      "featured": true,
+      "source": "cladlabs.ai"
+    },
+    {
+      "id": "modern-noir-chp1",
+      "title": "Modern Noir — Chapter 1",
+      "description": "Short fiction. Opening chapter.",
+      "date": "2023-02-23",
+      "readTime": "2 min read",
+      "tags": ["Fiction"],
+      "href": "/posts/driving_chp1.html",
+      "external": false,
+      "featured": true
+    },
+    {
+      "id": "paradise-lost-petrarch",
+      "title": "Petrarchan love & Eve's dream of Satan",
+      "description": "An undergraduate essay on Paradise Lost.",
+      "date": "2022-10-01",
+      "readTime": "5 min read",
+      "tags": ["Essay", "Literature"],
+      "href": "/posts/paradise_lost_petrarch.html",
+      "external": false,
+      "featured": true
+    }
+  ],
+  "drafts": [
+    {
+      "id": "koopman",
+      "title": "Koopman operators — a practical intro for time-series ML",
+      "description": "Using DMD + Koopman embeddings to debug chaotic sensor traces in semiconductor fab data.",
+      "tags": ["Time series", "ML"]
+    },
+    {
+      "id": "llm-ads",
+      "title": "Injecting LLM ads — lessons from YC",
+      "description": "Vector-DB design, prompt hardening, and why auction-less ad retrieval still converts.",
+      "tags": ["Applied AI"]
+    }
+  ],
+  "media": [
+    {
+      "id": "fondo-start-dec-2025",
+      "kind": "video",
+      "source": "youtube",
+      "videoId": "kayJ28TfW-g",
+      "liveUrl": "https://youtu.be/kayJ28TfW-g",
+      "title": "Fondo START — pivoting from a 1.5M-user AI ad network to Chad IDE",
+      "venue": "Fondo START Podcast",
+      "venueUrl": "https://www.linkedin.com/in/davjphillips/",
+      "description": "Conversation with David J. Phillips on the mid-YC pivot away from a 1.5M-user AI ad network to Clad Labs' \"BrainRot IDE,\" the forcing function of \"go viral in a week or it's not worth it,\" and what comes after F25.",
+      "date": "2025-12-09",
+      "tags": ["Media", "Podcast", "YC", "Clad Labs", "Fondo"]
+    },
+    {
+      "id": "signal-line-imagineai-nov-2025",
+      "kind": "video",
+      "source": "youtube",
+      "videoId": "h_egtIl94jo",
+      "liveUrl": "https://www.youtube.com/watch?v=h_egtIl94jo",
+      "title": "Signal Line — Building a Brain Rot IDE",
+      "venue": "Signal Line · ImagineAI",
+      "venueUrl": "https://www.imagineai.me/",
+      "description": "Long-form interview with Neo (ImagineAI) covering Richard's seven YC applications, the rejection that turned into the F25 pivot, why iteration speed matters more than anything else, and what the \"Chad IDE\" actually does.",
+      "date": "2025-11-10",
+      "tags": ["Media", "Podcast", "YC", "Clad Labs", "ImagineAI"],
+      "chapters": [
+        { "start": 0,    "label": "Cold open — best YC advice" },
+        { "start": 41,   "label": "Welcome to Signal Line" },
+        { "start": 53,   "label": "Who are Kevin and Richard?" },
+        { "start": 89,   "label": "Two middle-school friends start building" },
+        { "start": 147,  "label": "First idea — AI ads and RAG" },
+        { "start": 199,  "label": "\"I hate this idea\" — getting rejected by YC" },
+        { "start": 273,  "label": "Seven YC applications" },
+        { "start": 317,  "label": "The pivot 24 hours before the interview" },
+        { "start": 395,  "label": "YC's best advice: iteration speed over everything" },
+        { "start": 447,  "label": "YC's worst advice: they're too nice" },
+        { "start": 485,  "label": "The truth about fundraising and pivoting" },
+        { "start": 548,  "label": "Why we hired two interns during YC" },
+        { "start": 612,  "label": "Convincing people to join your startup" },
+        { "start": 676,  "label": "What the Chad IDE actually does" },
+        { "start": 835,  "label": "The world's first brain-rot IDE" },
+        { "start": 873,  "label": "Go-to-market strategy: have fun" },
+        { "start": 924,  "label": "No framework, just vibes" },
+        { "start": 977,  "label": "Where we go to think (spoiler: nowhere)" },
+        { "start": 1028, "label": "Advice for early-stage founders" }
+      ]
+    },
+    {
+      "id": "tbpn-yc-demo-day-dec-2025",
+      "kind": "video",
+      "source": "youtube",
+      "videoId": "dAmGwYH4d74",
+      "startSeconds": 3882,
+      "liveUrl": "https://www.youtube.com/live/dAmGwYH4d74?si=CyjdB9b7Os9sWolZ&t=3882",
+      "title": "TBPN — YC Demo Day with Paul Graham",
+      "venue": "TBPN",
+      "venueUrl": "https://www.youtube.com/@TBPNLive",
+      "description": "Live on TBPN during Y Combinator F25 Demo Day. Clad Labs featured in the show's coverage of the batch alongside Paul Graham.",
+      "date": "2025-12-02",
+      "duration": "1:04:42 in",
+      "thumbnail": "/media-thumbs/tbpn-yc-demo-day-dec-2025.jpg",
+      "tags": ["Media", "TBPN", "YC", "Clad Labs"],
+      "featured": true
+    }
+  ],
+  "notes": [
+    {
+      "id": "launching-clad-labs",
+      "kind": "update",
+      "title": "Launching Clad Labs",
+      "description": "Announcing what we're building and why code review is the right wedge into agentic infrastructure.",
+      "date": "2025-06-15",
+      "tags": ["Clad Labs", "Update"],
+      "href": "https://cladlabs.ai",
+      "external": true
+    },
+    {
+      "id": "yc-f25",
+      "kind": "update",
+      "title": "Accepted into Y Combinator F25",
+      "description": "A short note on the process and the batch.",
+      "date": "2025-06-01",
+      "tags": ["YC", "Update"],
+      "href": "https://www.ycombinator.com/verify/qm6tebearhqowggs",
+      "external": true
+    }
+  ]
+}

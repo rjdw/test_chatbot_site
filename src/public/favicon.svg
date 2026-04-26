@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Richard Wang">
+  <!-- Black circle background -->
+  <circle cx="32" cy="32" r="32" fill="#000"/>
+
+  <!--
+    HUD infinity path. Its bounding box (measured via sharp on a 1000dpi
+    raster) is: x 4.89–32.09 (width 27.19), y 1.65–14.24 (height 12.59),
+    center (18.49, 7.95).
+
+    We want it centered at (32, 32) of the 64×64 canvas at 42 px wide.
+    Scale s = 42 / 27.19 ≈ 1.545  →  height ≈ 19.45.
+    Translate = (32 − 18.49·s, 32 − 7.95·s) ≈ (3.43, 19.72).
+  -->
+  <g transform="translate(3.43 19.72) scale(1.545)" stroke="#ffffff"
+     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+     fill="none">
+    <path d="M10 10c0-4 4-6 7-3s5 6 8 6 6-2 6-5-3-6-6-5-5 4-8 6-5 5-7 4-4-2-4-5 3-5 6-5"/>
+  </g>
+</svg>

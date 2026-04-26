@@ -2,11 +2,9 @@ import { defineConfig } from "vite";
 import { resolve } from "path";
 import fg from "fast-glob";
 
-function postEntries() {
-  // grab every *.html under src/posts/ … at any depth
-  const files = fg.sync("src/posts/**/*.html");
-  return files.reduce((acc, file) => {
-    // key without extension, keeps folder structure: posts/2025/koopman
+function htmlEntries(globs) {
+  return fg.sync(globs).reduce((acc, file) => {
+    // key without extension, keeps folder structure, e.g. posts/foo or media/bar
     const key = file.replace(/^src\//, "").replace(/\.html$/, "");
     acc[key] = resolve(__dirname, file);
     return acc;
@@ -22,7 +20,8 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "src/index.html"),
-        ...postEntries(),
+        writing: resolve(__dirname, "src/writing.html"),
+        ...htmlEntries(["src/posts/**/*.html", "src/media/**/*.html"]),
       },
       output: {
         // hashed names for *all* emitted assets, incl. CSS
