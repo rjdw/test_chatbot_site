@@ -81,5 +81,18 @@ dormant:
   login/logout once auth exists.
 
 Set the secret locally in `.dev.vars` (see `.dev.vars.example`) and in the
-Cloudflare Pages dashboard for production. Remember to add this site's origin
-to the widget's **allowed origins** in the Clad dashboard.
+Cloudflare Pages dashboard for production.
+
+### Allowed origins
+
+Add these exact origins to the widget's **allowed origins** in the Clad
+dashboard (Settings -> Integrations -> Web Widget). Session creation is
+rejected from any other origin, and an origin is scheme + host (+ port) with
+**no trailing slash**:
+
+- `http://localhost:8788` (local dev, `npm run dev`)
+- `https://richardjdwang.com` (production apex, per `CNAME`)
+
+Optionally also add `https://www.richardjdwang.com` if you serve the `www`
+host. Wildcards are single-label (`https://*.richardjdwang.com` matches `www`
+but not the apex domain), so the apex must be listed explicitly.
