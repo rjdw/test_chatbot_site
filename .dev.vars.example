@@ -1,0 +1,12 @@
+# Local secrets for `wrangler pages dev` — copy to `.dev.vars` (git-ignored).
+# In production, set these in the Cloudflare Pages dashboard
+# (Settings → Environment variables / Secrets), NOT in the repo.
+
+# Existing: Google Gemini proxy (functions/api/gemini.js)
+GEMINI_API_KEY=your-gemini-api-key
+
+# Clad Support Chat — JWT signing secret for the identity endpoint
+# (functions/api/support-chat-token.js). Copy it from your Clad dashboard:
+# Settings → Integrations → Web Widget → JWT secret.
+# Only needed once you add logged-in users; anonymous chat works without it.
+SUPPORT_CHAT_WIDGET_SECRET=your-clad-widget-jwt-secret

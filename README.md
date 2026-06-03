@@ -57,3 +57,29 @@ pandoc drafts/my-post.md                      \
 - Wrap the HTML body with the site shell (see `posts/` examples).
 - Add a teaser card inside _Latest essays_ in `src/index.html`.
 - `npm run dev` – verify styling and PJAX navigation.”
+
+## Support chat (Clad)
+
+The [Clad](https://useclad.ai) Support Chat widget is loaded once from the
+shared app shell (`src/main.js` → `src/chat/support-chat.js`), so the launcher
+appears on every page. It boots an **anonymous** session automatically — no
+secret or env var is required for it to work.
+
+The `workspaceId`/`widgetId` in `src/chat/support-chat.js` are public
+identifiers. The signing **secret** is never shipped to the browser.
+
+### Identity verification (only when you add logins)
+
+There are no logged-in users today, so identity verification is wired but
+dormant:
+
+- `functions/api/support-chat-token.js` mints a short-lived (≤ 15 min) HS256
+  JWT, signed with `SUPPORT_CHAT_WIDGET_SECRET`. It returns `401` until you
+  implement `resolveUser()` (it never mints tokens for anonymous visitors).
+- `src/chat/support-chat.js` exposes `identifySupportChatUser(user)` and
+  `shutdownSupportChat()` (also on `window.cladSupport`). Call them on
+  login/logout once auth exists.
+
+Set the secret locally in `.dev.vars` (see `.dev.vars.example`) and in the
+Cloudflare Pages dashboard for production. Remember to add this site's origin
+to the widget's **allowed origins** in the Clad dashboard.
