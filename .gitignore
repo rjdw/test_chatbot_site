@@ -20,11 +20,12 @@ package-lock.json
 # NOTE: root-anchored on purpose — src/public/ is source and IS tracked.
 /public/
 
-# Generated post/media HTML (scripts/build-posts.js writes these from
-# src/posts/*.md and src/public/content.json before vite runs).
+# Generated post/media HTML and sitemap (scripts/build-posts.js writes
+# these from src/posts/*.md and src/public/content.json before vite runs).
 src/posts/*.html
 !src/posts/_template.html
 src/media/*.html
+src/public/sitemap.xml
 
 # ─── Tailwind/JIT cache ───────────────────────────────
 .tailwind-cache/

@@ -24,8 +24,14 @@ const POST_TEMPLATE = `<!DOCTYPE html>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#f6f8fa" />
     <title>{{TITLE}} — Richard Wang</title>
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Richard Wang" />
+    <meta property="og:title" content="{{TITLE}}" />
+    <meta property="og:description" content="{{DESCRIPTION}}" />
+    <meta name="twitter:card" content="summary" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&display=swap"
@@ -86,9 +92,13 @@ async function processMarkdownFile(filePath) {
   // Get title from frontmatter or filename
   const title = frontmatter.title || path.basename(filePath, '.md').replace(/_/g, ' ');
   
+  const description =
+    frontmatter.description || `${title} — an essay by Richard Wang.`;
+
   // Apply template
   const finalHtml = POST_TEMPLATE
     .replace(/{{TITLE}}/g, title)
+    .replace(/{{DESCRIPTION}}/g, escapeHtml(description))
     .replace('{{CONTENT}}', htmlContent);
   
   // Determine output path
@@ -219,8 +229,9 @@ const MEDIA_SHELL = (item, playerHtml, extraHead = '', embedCss = '') => `<!DOCT
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#f6f8fa" />
     <title>${escapeHtml(item.title)} — Richard Wang</title>
+    <link rel="canonical" href="https://richardjdwang.com/media/${escapeHtml(item.slug || item.id || '')}" />
     <meta name="description" content="${escapeHtml(item.description || '')}" />
     <meta property="og:title" content="${escapeHtml(item.title)}" />
     <meta property="og:type" content="${item.kind === 'video' ? 'video.other' : 'article'}" />
@@ -406,7 +417,7 @@ async function buildMedia() {
       item.slug ||
       (item.id || item.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (!slug) continue;
-    const html = MEDIA_SHELL(item, renderMediaPlayer(item));
+    const html = MEDIA_SHELL({ ...item, slug }, renderMediaPlayer(item));
     const outPath = path.join(outDir, `${slug}.html`);
     await fs.writeFile(outPath, html);
     built.push({ slug, item });
@@ -415,18 +426,40 @@ async function buildMedia() {
   return built;
 }
 
+// ─── Sitemap ────────────────────────────────────────────────────────
+// Written to src/public/ (gitignored) so Vite copies it into the build.
+
+const SITE_ORIGIN = 'https://richardjdwang.com';
+
+async function buildSitemap(posts, media) {
+  const urls = [
+    `${SITE_ORIGIN}/`,
+    `${SITE_ORIGIN}/writing`,
+    ...posts.map((p) => `${SITE_ORIGIN}/posts/${p.path}`),
+    ...media.map(({ slug }) => `${SITE_ORIGIN}/media/${slug}`),
+  ];
+  const xml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n') +
+    `\n</urlset>\n`;
+  await fs.writeFile(path.resolve('src/public/sitemap.xml'), xml);
+  console.log(`✅ Generated sitemap.xml (${urls.length} URLs)`);
+}
+
 async function buildPosts() {
   console.log('🔨 Building blog posts from markdown...');
 
   await regenerateFavicons();
   await validateContent();
-  await buildMedia();
+  const media = await buildMedia();
 
   // Find all markdown files in src/posts
   const markdownFiles = await fg('src/posts/**/*.md');
 
   if (markdownFiles.length === 0) {
     console.log('📝 No markdown files found in src/posts/');
+    await buildSitemap([], media);
     return [];
   }
   
@@ -440,7 +473,9 @@ async function buildPosts() {
       console.error(`❌ Error processing ${file}:`, error.message);
     }
   }
-  
+
+  await buildSitemap(posts, media);
+
   console.log(`✨ Successfully built ${posts.length} posts`);
   return posts;
 }

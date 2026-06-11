@@ -305,7 +305,9 @@
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-top: clamp(5rem, 12vh, 9rem);
+    /* svh: stable on mobile while the browser toolbar collapses */
     height: 88vh;
+    height: 88svh;
     clip-path: inset(0);
     display: grid;
     place-items: center;
@@ -315,7 +317,10 @@
     top: 0;
     left: 0;
     width: 100vw;
+    /* lvh: cover the largest viewport so the toolbar collapsing on
+       mobile never exposes a gap at the bottom of the scene */
     height: 100vh;
+    height: 100lvh;
     background-color: #070b10;
     background-size: cover;
     background-position: center;
@@ -365,6 +370,7 @@
     position: relative;
     clip-path: inset(0);
     min-height: 88vh;
+    min-height: 88svh;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -377,6 +383,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100lvh;
     background-color: #070b10;
     background-size: cover;
     background-position: center bottom;
