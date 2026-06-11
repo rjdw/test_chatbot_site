@@ -55,7 +55,7 @@
       180deg,
       rgba(7, 11, 16, 0) 0%,
       rgba(7, 11, 16, 0.55) 55%,
-      #fbfaf7 100%
+      #f6f8fa 100%
     );
     z-index: 3;
   }
@@ -259,38 +259,6 @@
     box-shadow: none;
   }
 
-  /* Scroll hint */
-  .hero-scroll-hint {
-    position: absolute;
-    bottom: 1.75rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.72rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: rgba(202, 219, 229, 0.5);
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    pointer-events: none;
-    z-index: 4;
-  }
-  .hero-scroll-hint .line {
-    width: 1px;
-    height: 34px;
-    background: linear-gradient(
-      180deg,
-      rgba(202, 219, 229, 0.6),
-      rgba(202, 219, 229, 0)
-    );
-    animation: hero-pulse 2.4s ease-in-out infinite;
-  }
-  @keyframes hero-pulse {
-    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
-    50% { transform: scaleY(1); opacity: 1; }
-  }
-
   /* Entrance: a staggered fade-rise on first paint. Compositor-only. */
   @keyframes hero-rise {
     from {
@@ -318,7 +286,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hero-art,
-    .hero-scroll-hint .line,
     .hero-headline,
     .hero-body,
     .hero-actions {
@@ -348,7 +315,7 @@
     max-width: 54rem;
     margin: 0 auto;
     padding: 0 clamp(1.25rem, 4vw, 2.5rem) 6rem;
-    background: #fbfaf7;
+    background: #f6f8fa;
     color: #1a1e2b;
     font-family: var(--font-inter);
     position: relative;
@@ -757,7 +724,7 @@
 
   /* Footer */
   .blog-footer {
-    background: #fbfaf7;
+    background: #f6f8fa;
     border-top: 1px solid rgba(20, 24, 48, 0.08);
     position: relative;
     z-index: 3;
@@ -826,7 +793,7 @@
     margin: 0 auto;
     padding: clamp(4rem, 8vh, 6rem) clamp(1.25rem, 4vw, 2rem) 5rem;
     color: #1a1e2b;
-    background: #fbfaf7;
+    background: #f6f8fa;
   }
   .post-back {
     display: inline-flex;
@@ -989,7 +956,7 @@
       rgba(20, 24, 48, 0.03) 50%,
       rgba(20, 24, 48, 0.06)
     );
-    background-color: #fbfaf7;
+    background-color: #f6f8fa;
   }
   .media-card-play {
     position: absolute;
@@ -1127,7 +1094,7 @@
 
 /* ─── Media post shell ────────────────────────────── */
 @layer components {
-  .media-shell { background: #fbfaf7; }
+  .media-shell { background: #f6f8fa; }
   .media-page {
     max-width: 46rem;
     margin: 0 auto;
@@ -1353,8 +1320,8 @@
   }
 }
 
-/* Make sure the whole page carries the warmer off-white base. */
-body { background: #fbfaf7; }
+/* Make sure the whole page carries the cool fog-white base. */
+body { background: #f6f8fa; }
 
 /* ─── Archive CTA card on home ──────────────────── */
 @layer components {
@@ -1424,7 +1391,7 @@ body { background: #fbfaf7; }
 
 /* ─── Archive page ──────────────────────────────── */
 @layer components {
-  .archive-shell { background: #fbfaf7; }
+  .archive-shell { background: #f6f8fa; }
   .archive-page {
     max-width: 54rem;
     margin: 0 auto;
