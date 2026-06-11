@@ -76,26 +76,46 @@
 
       <!-- ── hero copy ── -->
       <div class="hero-content">
-        <!-- Small möbius mark: a quiet nod to the old Klein bottle.
-             Gradient loop + a slow comet via SMIL; scales with the SVG,
-             no JS. -->
+        <!-- Orbit mark: three thin elliptical orbits around a bright
+             core, with two comets riding them via SMIL. Scales with
+             the SVG; no JS. -->
         <svg
           class="hero-mark"
-          viewBox="0 0 240 120"
+          viewBox="0 0 280 160"
           fill="none"
           aria-hidden="true"
         >
-          <path
-            class="hero-mark-loop"
-            d="M 120 60 C 144 28, 228 28, 228 60 C 228 92, 144 92, 120 60 C 96 28, 12 28, 12 60 C 12 92, 96 92, 120 60 Z"
+          <ellipse
+            class="hero-orbit hero-orbit--1"
+            cx="140" cy="80" rx="120" ry="34"
           />
-          <circle class="hero-comet" r="2.6">
+          <ellipse
+            class="hero-orbit hero-orbit--2"
+            cx="140" cy="80" rx="120" ry="34"
+            transform="rotate(28 140 80)"
+          />
+          <ellipse
+            class="hero-orbit hero-orbit--3"
+            cx="140" cy="80" rx="120" ry="34"
+            transform="rotate(-28 140 80)"
+          />
+          <circle class="hero-mark-core" cx="140" cy="80" r="2.5" />
+          <circle class="hero-comet" r="2.4">
             <animateMotion
-              dur="10s"
+              dur="12s"
               repeatCount="indefinite"
-              path="M 120 60 C 144 28, 228 28, 228 60 C 228 92, 144 92, 120 60 C 96 28, 12 28, 12 60 C 12 92, 96 92, 120 60 Z"
+              path="M 20 80 A 120 34 0 1 1 260 80 A 120 34 0 1 1 20 80"
             />
           </circle>
+          <g transform="rotate(28 140 80)">
+            <circle class="hero-comet hero-comet--dim" r="1.9">
+              <animateMotion
+                dur="17s"
+                repeatCount="indefinite"
+                path="M 20 80 A 120 34 0 1 1 260 80 A 120 34 0 1 1 20 80"
+              />
+            </circle>
+          </g>
         </svg>
         <h1 class="hero-headline">
           Richard <em>Wang</em>
