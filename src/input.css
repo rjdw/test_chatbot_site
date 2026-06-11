@@ -32,9 +32,9 @@
     position: relative;
     width: 100%;
     min-height: 100svh;
-    color: #f1ece1;
+    color: #edf2f5;
     isolation: isolate;
-    background: #0b0a09;
+    background: #070b10;
     overflow: hidden;
     display: flex;
     /* Graphic-tee composition: the print owns the upper half, the
@@ -53,8 +53,8 @@
     pointer-events: none;
     background: linear-gradient(
       180deg,
-      rgba(11, 10, 9, 0) 0%,
-      rgba(11, 10, 9, 0.55) 55%,
+      rgba(7, 11, 16, 0) 0%,
+      rgba(7, 11, 16, 0.55) 55%,
       #fbfaf7 100%
     );
     z-index: 3;
@@ -75,7 +75,7 @@
     inset: 0;
     background-image: url("/hero-art.webp");
     background-size: cover;
-    background-position: center 0%;
+    background-position: center 30%;
     animation: hero-breathe 36s ease-in-out infinite alternate;
     will-change: transform;
   }
@@ -92,15 +92,15 @@
     background:
       linear-gradient(
         180deg,
-        rgba(11, 10, 9, 0.1) 0%,
-        rgba(11, 10, 9, 0) 30%,
-        rgba(11, 10, 9, 0.42) 62%,
-        rgba(11, 10, 9, 0.72) 100%
+        rgba(7, 11, 16, 0.25) 0%,
+        rgba(7, 11, 16, 0) 30%,
+        rgba(7, 11, 16, 0.35) 62%,
+        rgba(7, 11, 16, 0.66) 100%
       ),
       radial-gradient(
         ellipse 130% 100% at 50% 0%,
-        rgba(11, 10, 9, 0) 60%,
-        rgba(11, 10, 9, 0.5) 100%
+        rgba(7, 11, 16, 0) 60%,
+        rgba(7, 11, 16, 0.45) 100%
       );
   }
 
@@ -132,7 +132,7 @@
     font-weight: 500;
     letter-spacing: -0.01em;
     font-size: 1.1rem;
-    color: #f1ece1;
+    color: #edf2f5;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -141,7 +141,7 @@
   .hero-hud-brand .hero-infinity {
     width: 22px;
     height: 14px;
-    stroke: #cfc4ae;
+    stroke: #a9bfcb;
   }
   .hero-hud-nav {
     display: flex;
@@ -179,7 +179,7 @@
     line-height: 1.14;
     letter-spacing: -0.025em;
     margin: 0 0 1rem;
-    color: #f7f3ea;
+    color: #f3f7f9;
   }
   .hero-headline em {
     font-style: italic;
@@ -188,7 +188,7 @@
     display: inline-block;
     padding: 0 0.1em 0.12em 0.02em;
     margin: 0 -0.04em -0.12em 0;
-    background: linear-gradient(120deg, #f3e9d2 0%, #d9b27e 100%);
+    background: linear-gradient(120deg, #e7f0f3 0%, #9cc2cf 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -198,17 +198,17 @@
   .hero-body {
     font-size: clamp(1rem, 1.5vw, 1.15rem);
     line-height: 1.6;
-    color: rgba(238, 230, 214, 0.7);
+    color: rgba(216, 229, 238, 0.72);
     max-width: 30rem;
     margin: 0 auto;
   }
   .hero-link {
-    color: rgba(248, 243, 232, 0.95);
+    color: rgba(240, 247, 250, 0.95);
     text-decoration: none;
     background-image: linear-gradient(
       90deg,
-      rgba(217, 178, 126, 0.7),
-      rgba(217, 178, 126, 0.25)
+      rgba(146, 186, 200, 0.7),
+      rgba(146, 186, 200, 0.25)
     );
     background-repeat: no-repeat;
     background-size: 100% 1px;
@@ -230,8 +230,8 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.8rem 1.4rem;
-    color: #161310;
-    background: #f2ede1;
+    color: #0d1318;
+    background: #edf2f5;
     border-radius: 0.6rem;
     font-weight: 500;
     font-size: 0.95rem;
@@ -250,11 +250,11 @@
   .hero-cta--ghost {
     color: rgba(255, 255, 255, 0.85);
     background: transparent;
-    border: 1px solid rgba(238, 226, 200, 0.22);
+    border: 1px solid rgba(196, 218, 228, 0.22);
     box-shadow: none;
   }
   .hero-cta--ghost:hover {
-    border-color: rgba(238, 226, 200, 0.5);
+    border-color: rgba(196, 218, 228, 0.5);
     background: rgba(255, 255, 255, 0.04);
     box-shadow: none;
   }
@@ -268,7 +268,7 @@
     font-size: 0.72rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: rgba(232, 222, 200, 0.5);
+    color: rgba(202, 219, 229, 0.5);
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -281,8 +281,8 @@
     height: 34px;
     background: linear-gradient(
       180deg,
-      rgba(232, 222, 200, 0.6),
-      rgba(232, 222, 200, 0)
+      rgba(202, 219, 229, 0.6),
+      rgba(202, 219, 229, 0)
     );
     animation: hero-pulse 2.4s ease-in-out infinite;
   }
@@ -400,7 +400,7 @@
   /* Same italic-gradient treatment as the hero headline but on light. */
   .blog-em {
     font-style: italic;
-    color: #a08b76;
+    color: #7e93a0;
     padding-right: 0.06em; /* italic overhang breathing room */
   }
   .blog-section-sub {
@@ -423,7 +423,7 @@
   }
 
   .blog-link {
-    color: #a8542c;
+    color: #2b6777;
     text-decoration: none;
     background-image: linear-gradient(currentColor, currentColor);
     background-repeat: no-repeat;
@@ -432,7 +432,7 @@
     transition: color 140ms ease, background-size 140ms ease;
   }
   .blog-link:hover {
-    color: #74381c;
+    color: #1b4a55;
     background-size: 100% 2px;
   }
 
@@ -601,11 +601,11 @@
     background: rgba(20, 24, 48, 0.03);
   }
   a.blog-entry-link:hover .blog-entry-title {
-    color: #a8542c;
+    color: #2b6777;
   }
   a.blog-entry-link:hover .blog-entry-arrow {
     transform: translate(3px, -3px);
-    color: #a8542c;
+    color: #2b6777;
   }
   .blog-entry.is-draft .blog-entry-link {
     cursor: default;
@@ -670,7 +670,7 @@
     padding-top: 0.45rem;
   }
   a.press-entry-link:hover .press-outlet {
-    color: #a8542c;
+    color: #2b6777;
   }
   @media (max-width: 640px) {
     .press-entry-link {
@@ -878,8 +878,8 @@
   }
   .post-body h2 { font-size: 1.55rem; }
   .post-body h3 { font-size: 1.25rem; }
-  .post-body a { color: #a8542c; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  .post-body a:hover { color: #74381c; }
+  .post-body a { color: #2b6777; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .post-body a:hover { color: #1b4a55; }
   .post-body code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.92em;
@@ -1038,8 +1038,8 @@
     font-size: 0.66rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #a8542c;
-    background: rgba(168, 84, 44, 0.09);
+    color: #2b6777;
+    background: rgba(43, 103, 119, 0.1);
     border-radius: 999px;
   }
   .media-card-title {
@@ -1143,7 +1143,7 @@
     font-size: 0.68rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #a8542c;
+    color: #2b6777;
     background: rgba(20, 24, 48, 0.06);
     border-radius: 999px;
     margin-bottom: 0.9rem;
@@ -1311,7 +1311,7 @@
     font-variant-numeric: tabular-nums;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.85rem;
-    color: #a8542c;
+    color: #2b6777;
   }
   .media-chapter-label {
     font-family: var(--font-display);
@@ -1329,15 +1329,15 @@
     gap: 0.5rem;
     font-size: 0.88rem;
     letter-spacing: 0.02em;
-    color: #a8542c;
+    color: #2b6777;
     text-decoration: none;
-    border-bottom: 1px solid rgba(168, 84, 44, 0.35);
+    border-bottom: 1px solid rgba(43, 103, 119, 0.35);
     padding-bottom: 1px;
     transition: color 140ms ease, border-color 140ms ease;
   }
   .media-external-link:hover {
-    color: #74381c;
-    border-color: #74381c;
+    color: #1b4a55;
+    border-color: #1b4a55;
   }
 
   .media-tags {
@@ -1385,7 +1385,7 @@ body { background: #fbfaf7; }
   }
   .blog-archive-cta:hover .blog-archive-cta-arrow {
     transform: translateX(4px);
-    color: #a8542c;
+    color: #2b6777;
   }
   .blog-archive-cta--subtle {
     background: transparent;
@@ -1470,8 +1470,8 @@ body { background: #fbfaf7; }
     transition: border-color 140ms ease, box-shadow 140ms ease;
   }
   .archive-search:focus-within {
-    border-color: #a8542c;
-    box-shadow: 0 0 0 4px rgba(168, 84, 44, 0.13);
+    border-color: #2b6777;
+    box-shadow: 0 0 0 4px rgba(43, 103, 119, 0.14);
   }
   .archive-search svg {
     width: 16px;
@@ -1577,8 +1577,8 @@ body { background: #fbfaf7; }
     font-size: 0.68rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #a8542c;
-    background: rgba(168, 84, 44, 0.09);
+    color: #2b6777;
+    background: rgba(43, 103, 119, 0.1);
     border-radius: 999px;
   }
 }
