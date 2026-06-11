@@ -294,6 +294,102 @@
   }
 }
 
+/* ─── Bay interludes & finale (home) ───────────────── */
+/* The "window" technique: the wrapper clips its own paint via
+   clip-path, and the image inside is position:fixed, so the scene
+   stays still while the page scrolls over it. Pure compositor work —
+   no scroll listeners, no JS. */
+@layer components {
+  .bay-interlude {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-top: clamp(5rem, 12vh, 9rem);
+    height: 64vh;
+    clip-path: inset(0);
+    pointer-events: none;
+  }
+  .bay-interlude-img {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #070b10;
+    background-size: cover;
+    background-position: center;
+  }
+  /* Feather the band into the fog-white page above and below. */
+  .bay-interlude::before,
+  .bay-interlude::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 18%;
+    z-index: 1;
+  }
+  .bay-interlude::before {
+    top: 0;
+    background: linear-gradient(180deg, #f6f8fa, rgba(246, 248, 250, 0));
+  }
+  .bay-interlude::after {
+    bottom: 0;
+    background: linear-gradient(0deg, #f6f8fa, rgba(246, 248, 250, 0));
+  }
+
+  /* Footer-as-finale: home's footer is a tall window onto the
+     viewer's-shore image, anchored so the dock rises from below as
+     the page runs out. Other pages keep the plain light footer. */
+  .blog-footer--night {
+    position: relative;
+    clip-path: inset(0);
+    min-height: 82vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-top: 0;
+    background: transparent;
+  }
+  .bay-finale {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #070b10;
+    background-size: cover;
+    background-position: center bottom;
+  }
+  .blog-footer--night::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 22%;
+    z-index: 1;
+    background: linear-gradient(180deg, #f6f8fa, rgba(246, 248, 250, 0));
+  }
+  .blog-footer--night .blog-footer-inner {
+    position: relative;
+    z-index: 2;
+    color: rgba(218, 230, 240, 0.66);
+  }
+  .blog-footer--night .blog-footer-mark {
+    color: #f0f5f8;
+  }
+  .blog-footer--night .blog-footer-mark svg {
+    color: #9fb6c4;
+  }
+  .blog-footer--night .blog-footer-nav a {
+    color: rgba(222, 233, 242, 0.78);
+  }
+  .blog-footer--night .blog-footer-nav a:hover {
+    color: #ffffff;
+  }
+}
+
 /* ─── Scroll reveal (home sections) ────────────────── */
 /* The `rv` class is added by JS only when motion is allowed, so the
    content is never hidden if JS fails or reduced-motion is set. */
