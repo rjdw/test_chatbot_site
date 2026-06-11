@@ -89,7 +89,7 @@
     height: 58vmax;
     border-radius: 50%;
     filter: blur(70px);
-    opacity: 0.4;
+    opacity: 0.3;
     will-change: transform;
   }
   .hero-aurora--a {
@@ -135,45 +135,23 @@
     to   { transform: translate3d(4vw, -6vh, 0) scale(1.12); }
   }
 
-  /* Möbius ribbon */
-  .hero-ribbon {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: min(120vw, 1300px);
-    transform: translate(-50%, -52%);
-    opacity: 0.9;
+  /* Small möbius mark above the headline */
+  .hero-mark {
+    width: clamp(120px, 14vw, 170px);
+    margin: 0 auto 2.25rem;
+    display: block;
+    overflow: visible;
   }
-  .hero-ribbon-halo {
-    stroke: url(#hero-ribbon-grad);
-    stroke-width: 26;
-    opacity: 0.22;
-  }
-  .hero-ribbon-edge {
-    stroke: rgba(200, 214, 255, 0.18);
-    stroke-width: 1;
-  }
-  .hero-ribbon-main {
-    stroke: url(#hero-ribbon-grad);
-    stroke-width: 2.5;
+  .hero-mark-loop {
+    stroke: url(#hero-mark-grad);
+    stroke-width: 2;
     stroke-linecap: round;
-  }
-  .hero-ribbon-flow {
-    stroke: rgba(255, 255, 255, 0.95);
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-dasharray: 70 930; /* normalised via pathLength="1000" */
-    animation: hero-flow 11s linear infinite;
-    filter: drop-shadow(0 0 6px rgba(213, 160, 255, 0.9));
-  }
-  @keyframes hero-flow {
-    from { stroke-dashoffset: 0; }
-    to   { stroke-dashoffset: -1000; }
+    opacity: 0.85;
   }
   .hero-comet {
     fill: #ffffff;
-    filter: drop-shadow(0 0 8px rgba(160, 200, 255, 1))
-      drop-shadow(0 0 18px rgba(199, 123, 255, 0.8));
+    filter: drop-shadow(0 0 5px rgba(160, 200, 255, 0.95))
+      drop-shadow(0 0 12px rgba(199, 123, 255, 0.7));
   }
 
   /* Top bar */
@@ -220,39 +198,17 @@
   }
   .hero-hud-nav a:hover { color: #fff; }
 
-  /* Copy */
+  /* Copy — centred, quiet, nothing behind the text */
   .hero-content {
     position: relative;
     z-index: 2;
-    max-width: 46rem;
-    width: min(92vw, 46rem);
+    max-width: 44rem;
+    width: min(92vw, 44rem);
     padding: 6rem max(1.25rem, 5vw);
-    text-align: left;
-    text-shadow: 0 1px 6px rgba(5, 6, 10, 0.45);
+    text-align: center;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-  }
-
-  .hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.65rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: rgba(200, 214, 255, 0.75);
-    margin-bottom: 1.1rem;
-  }
-  .hero-eyebrow::before {
-    content: "";
-    width: 34px;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      rgba(200, 214, 255, 0.8),
-      rgba(200, 214, 255, 0)
-    );
   }
 
   .hero-headline {
@@ -288,33 +244,33 @@
   }
 
   .hero-body {
-    font-size: clamp(1rem, 1.6vw, 1.2rem);
-    line-height: 1.55;
-    color: rgba(235, 240, 255, 0.82);
-    max-width: 36rem;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    line-height: 1.6;
+    color: rgba(225, 230, 248, 0.78);
+    max-width: 30rem;
+    margin: 0 auto;
   }
-
-  .hero-meta {
-    margin-top: 1.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
+  .hero-link {
+    color: #e8ecff;
+    text-decoration: none;
+    background-image: linear-gradient(
+      90deg,
+      rgba(143, 210, 255, 0.7),
+      rgba(213, 160, 255, 0.7)
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    transition: color 140ms ease;
   }
-  .hero-meta span {
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    padding: 0.3rem 0.75rem;
-    border: 1px solid rgba(220, 226, 255, 0.18);
-    border-radius: 999px;
-    color: rgba(235, 240, 255, 0.78);
-    background: rgba(255, 255, 255, 0.04);
-  }
+  .hero-link:hover { color: #ffffff; }
 
   .hero-actions {
-    margin-top: 1.75rem;
+    margin-top: 2.25rem;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 0.75rem;
   }
   .hero-cta {
@@ -384,12 +340,10 @@
     .hero-hud { padding: 1rem 1.1rem; }
     .hero-hud-nav { display: none; }
     .hero-content { padding: 5.5rem 1.1rem 4rem; }
-    .hero-ribbon { width: 175vw; opacity: 0.55; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-aurora,
-    .hero-ribbon-flow,
     .hero-scroll-hint .line {
       animation: none;
     }

@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Richard Wang — ML engineer and co-founder of Clad Labs AI (YC F25). Essays on applied AI, infrastructure, and writing in the margins."
+      content="Richard Wang — co-founder &amp; CEO of Clad Labs. Essays on applied AI, infrastructure, and writing in the margins."
     />
     <title>Richard Wang — ML engineer &amp; founder</title>
     <link
@@ -41,57 +41,6 @@
         <div class="hero-aurora hero-aurora--a"></div>
         <div class="hero-aurora hero-aurora--b"></div>
         <div class="hero-aurora hero-aurora--c"></div>
-
-        <!-- Möbius ribbon: a single self-crossing loop. The flowing
-             highlight is a dash animation normalised by pathLength, and
-             the comet rides the same path via SMIL — both scale with
-             the SVG so nothing ever needs JS or re-layout. -->
-        <svg
-          class="hero-ribbon"
-          viewBox="0 0 1200 520"
-          fill="none"
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="hero-ribbon-grad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#5ec8ff" />
-              <stop offset="38%" stop-color="#c77bff" />
-              <stop offset="70%" stop-color="#ff7aa7" />
-              <stop offset="100%" stop-color="#ffd27a" />
-            </linearGradient>
-            <filter id="hero-ribbon-blur" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="14" />
-            </filter>
-          </defs>
-
-          <path
-            class="hero-ribbon-halo"
-            filter="url(#hero-ribbon-blur)"
-            d="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
-          />
-          <path
-            class="hero-ribbon-edge"
-            d="M 600 274 C 718 128, 1124 128, 1124 274 C 1124 396, 722 396, 600 274 C 478 128, 76 128, 76 274 C 76 396, 482 396, 600 274 Z"
-          />
-          <path
-            class="hero-ribbon-main"
-            pathLength="1000"
-            d="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
-          />
-          <path
-            class="hero-ribbon-flow"
-            pathLength="1000"
-            d="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
-          />
-          <circle class="hero-comet" r="4.5">
-            <animateMotion
-              dur="14s"
-              repeatCount="indefinite"
-              path="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
-            />
-          </circle>
-        </svg>
       </div>
 
       <!-- ── top bar ── -->
@@ -126,21 +75,48 @@
 
       <!-- ── hero copy ── -->
       <div class="hero-content">
-        <div class="hero-eyebrow">ML engineer &amp; founder · San Francisco</div>
+        <!-- Small möbius mark: a quiet nod to the old Klein bottle.
+             Gradient loop + a slow comet via SMIL; scales with the SVG,
+             no JS. -->
+        <svg
+          class="hero-mark"
+          viewBox="0 0 240 120"
+          fill="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="hero-mark-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#5ec8ff" />
+              <stop offset="50%" stop-color="#c77bff" />
+              <stop offset="100%" stop-color="#ffb194" />
+            </linearGradient>
+          </defs>
+          <path
+            class="hero-mark-loop"
+            d="M 120 60 C 144 28, 228 28, 228 60 C 228 92, 144 92, 120 60 C 96 28, 12 28, 12 60 C 12 92, 96 92, 120 60 Z"
+          />
+          <circle class="hero-comet" r="2.6">
+            <animateMotion
+              dur="10s"
+              repeatCount="indefinite"
+              path="M 120 60 C 144 28, 228 28, 228 60 C 228 92, 144 92, 120 60 C 96 28, 12 28, 12 60 C 12 92, 96 92, 120 60 Z"
+            />
+          </circle>
+        </svg>
         <h1 class="hero-headline">
           Richard <em>Wang</em>
         </h1>
         <p class="hero-body">
-          Co-founder &amp; CEO of Clad Labs AI (YC F25) — building AI
-          infrastructure for software engineering: code retrieval at
-          repository scale, review agents, and the evaluation stack that
-          keeps both honest. Writing in the margins.
+          Co-founder &amp; CEO of
+          <a
+            class="hero-link"
+            href="https://cladlabs.ai"
+            target="_blank"
+            rel="noopener"
+            >Clad Labs</a
+          >. Machine learning engineer in San Francisco, writing on
+          applied AI and whatever else comes to mind.
         </p>
-        <div class="hero-meta">
-          <span>Applied AI</span>
-          <span>Retrieval &amp; evaluation</span>
-          <span>Research &amp; writing</span>
-        </div>
         <div class="hero-actions">
           <a
             class="hero-cta"
@@ -445,18 +421,6 @@
               Cloudflare Pages + Tailwind CSS + Vite. Static HTML, a tiny
               PJAX router, and a hero made of pure CSS and SVG — no WebGL,
               no animation libraries, no chatbot.
-            </p>
-          </details>
-          <details class="blog-faq-item">
-            <summary>What happened to the Klein bottle?</summary>
-            <p>
-              An earlier version of this page rendered a physically-based
-              Klein bottle in WebGL and hijacked every scroll gesture to
-              spin it. Gorgeous, but the shader compile stalled first
-              paint and the scroll-jacking made the whole page feel
-              sluggish. It's been retired in favor of a hand-drawn Möbius
-              ribbon whose animations run entirely on the compositor — the
-              page now scrolls natively at full frame rate.
             </p>
           </details>
           <details class="blog-faq-item">
