@@ -10,9 +10,9 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Richard Wang — ML engineer and co-founder of Clad Labs AI (YC F25). A scroll-driven journey through a Klein bottle."
+      content="Richard Wang — ML engineer and co-founder of Clad Labs AI (YC F25). Essays on applied AI, infrastructure, and writing in the margins."
     />
-    <title>Richard Wang — A journey through a Klein bottle</title>
+    <title>Richard Wang — ML engineer &amp; founder</title>
     <link
       rel="preconnect"
       href="https://fonts.gstatic.com"
@@ -22,278 +22,153 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&display=swap"
     />
-    <script type="module" crossorigin src="/assets/router-CjkFk4kM.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/router-p0p6ggoK.css">
+    <script type="module" crossorigin src="/assets/router-BNx0hGR7.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/router-C3NlmM6y.css">
   </head>
 
   <body class="bg-gray-50 text-gray-800 leading-relaxed">
     <!-- ──────────────────────────────────────────────────────────────
-         KLEIN BOTTLE SCROLL JOURNEY  (lives outside #page-content so
-         the PJAX router leaves it alone)
+         HERO  (lives outside #page-content so the PJAX router leaves
+         it alone). Pure CSS + SVG — every animation runs on the
+         compositor; the page scrolls natively with zero JS involved.
          ────────────────────────────────────────────────────────────── -->
     <section
-      id="klein-journey"
-      class="klein-journey home-only"
-      aria-label="Scroll-driven Klein bottle hero"
+      id="site-hero"
+      class="site-hero home-only"
+      aria-label="Intro"
     >
-      <div class="klein-stage">
-        <canvas class="klein-canvas" aria-hidden="true"></canvas>
-        <div class="klein-vignette" aria-hidden="true"></div>
+      <div class="hero-bg" aria-hidden="true">
+        <div class="hero-stars"></div>
+        <div class="hero-aurora hero-aurora--a"></div>
+        <div class="hero-aurora hero-aurora--b"></div>
+        <div class="hero-aurora hero-aurora--c"></div>
 
-        <!-- ── top bar ── -->
-        <div class="klein-hud">
-          <a class="klein-hud-brand" href="/">
+        <!-- Möbius ribbon: a single self-crossing loop. The flowing
+             highlight is a dash animation normalised by pathLength, and
+             the comet rides the same path via SMIL — both scale with
+             the SVG so nothing ever needs JS or re-layout. -->
+        <svg
+          class="hero-ribbon"
+          viewBox="0 0 1200 520"
+          fill="none"
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="hero-ribbon-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#5ec8ff" />
+              <stop offset="38%" stop-color="#c77bff" />
+              <stop offset="70%" stop-color="#ff7aa7" />
+              <stop offset="100%" stop-color="#ffd27a" />
+            </linearGradient>
+            <filter id="hero-ribbon-blur" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="14" />
+            </filter>
+          </defs>
+
+          <path
+            class="hero-ribbon-halo"
+            filter="url(#hero-ribbon-blur)"
+            d="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
+          />
+          <path
+            class="hero-ribbon-edge"
+            d="M 600 274 C 718 128, 1124 128, 1124 274 C 1124 396, 722 396, 600 274 C 478 128, 76 128, 76 274 C 76 396, 482 396, 600 274 Z"
+          />
+          <path
+            class="hero-ribbon-main"
+            pathLength="1000"
+            d="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
+          />
+          <path
+            class="hero-ribbon-flow"
+            pathLength="1000"
+            d="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
+          />
+          <circle class="hero-comet" r="4.5">
+            <animateMotion
+              dur="14s"
+              repeatCount="indefinite"
+              path="M 600 260 C 720 110, 1140 110, 1140 260 C 1140 410, 720 410, 600 260 C 480 110, 60 110, 60 260 C 60 410, 480 410, 600 260 Z"
+            />
+          </circle>
+        </svg>
+      </div>
+
+      <!-- ── top bar ── -->
+      <div class="hero-hud">
+        <a class="hero-hud-brand" href="/">
+          <svg
+            class="hero-infinity"
+            viewBox="0 0 40 20"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path
+              d="M10 10c0-4 4-6 7-3s5 6 8 6 6-2 6-5-3-6-6-5-5 4-8 6-5 5-7 4-4-2-4-5 3-5 6-5"
+            />
+          </svg>
+          Richard Wang
+        </a>
+        <nav class="hero-hud-nav" aria-label="Primary">
+          <a href="#essays">Essays</a>
+          <a href="#faq">FAQ</a>
+          <a
+            href="https://cladlabs.ai"
+            target="_blank"
+            rel="noopener"
+            >Clad Labs</a
+          >
+        </nav>
+      </div>
+
+      <!-- ── hero copy ── -->
+      <div class="hero-content">
+        <div class="hero-eyebrow">ML engineer &amp; founder · San Francisco</div>
+        <h1 class="hero-headline">
+          Richard <em>Wang</em>
+        </h1>
+        <p class="hero-body">
+          Co-founder &amp; CEO of Clad Labs AI (YC F25) — building AI
+          infrastructure for software engineering: code retrieval at
+          repository scale, review agents, and the evaluation stack that
+          keeps both honest. Writing in the margins.
+        </p>
+        <div class="hero-meta">
+          <span>Applied AI</span>
+          <span>Retrieval &amp; evaluation</span>
+          <span>Research &amp; writing</span>
+        </div>
+        <div class="hero-actions">
+          <a
+            class="hero-cta"
+            href="https://cladlabs.ai"
+            target="_blank"
+            rel="noopener"
+            >Visit Clad Labs
             <svg
-              class="klein-infinity"
-              viewBox="0 0 40 20"
+              viewBox="0 0 20 20"
               fill="none"
+              stroke="currentColor"
+              stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              stroke-width="1.5"
-              aria-hidden="true"
             >
-              <path
-                d="M10 10c0-4 4-6 7-3s5 6 8 6 6-2 6-5-3-6-6-5-5 4-8 6-5 5-7 4-4-2-4-5 3-5 6-5"
-              />
+              <path d="M7 17L17 7M9 7h8v8" />
             </svg>
-            Richard Wang
           </a>
-          <nav class="klein-hud-nav" aria-label="Primary">
-            <a href="#essays">Essays</a>
-            <a href="#faq">FAQ</a>
-            <a
-              href="https://cladlabs.ai"
-              target="_blank"
-              rel="noopener"
-              >Clad Labs</a
-            >
-          </nav>
-        </div>
-
-        <!-- ── right-edge progress rail ── -->
-        <div class="klein-progress" aria-hidden="true">
-          <span class="klein-progress-label">00%</span>
-          <div class="klein-progress-track">
-            <div class="klein-progress-bar"></div>
-          </div>
-          <div class="klein-step-dots">
-            <button class="klein-step-dot is-active" aria-label="Chapter 1"></button>
-            <button class="klein-step-dot" aria-label="Chapter 2"></button>
-            <button class="klein-step-dot" aria-label="Chapter 3"></button>
-            <button class="klein-step-dot" aria-label="Chapter 4"></button>
-            <button class="klein-step-dot" aria-label="Chapter 5"></button>
-            <button class="klein-step-dot" aria-label="Chapter 6"></button>
-          </div>
-        </div>
-
-        <!-- ── overlayed chapter content ── -->
-        <div class="klein-overlay">
-          <div class="klein-chapters">
-            <article class="klein-chapter" data-step="0">
-              <div class="klein-eyebrow">01 · Introduction</div>
-              <h1 class="klein-headline">
-                Richard <em>Wang</em>
-              </h1>
-              <p class="klein-body">
-                Machine learning engineer and founder based in San Francisco.
-                Building tools for software teams and writing in the margins.
-              </p>
-              <div class="klein-meta">
-                <span>San Francisco</span>
-                <span>Applied AI</span>
-                <span>Research &amp; writing</span>
-              </div>
-            </article>
-
-            <article class="klein-chapter" data-step="0.2">
-              <div class="klein-eyebrow">02 · Work</div>
-              <h2 class="klein-headline">
-                Co-founder &amp; CEO of <em>Clad Labs AI</em>
-              </h2>
-              <p class="klein-body">
-                Clad Labs builds AI infrastructure for software engineering —
-                code retrieval at repository scale, review agents calibrated
-                to production standards, and the evaluation stack that keeps
-                both honest.
-              </p>
-              <div class="klein-meta">
-                <span>Y Combinator · F25</span>
-                <span>Seed stage</span>
-                <span>Hiring</span>
-              </div>
-              <a
-                class="klein-cta"
-                href="https://cladlabs.ai"
-                target="_blank"
-                rel="noopener"
-                >Visit Clad Labs
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M7 17L17 7M9 7h8v8" />
-                </svg>
-              </a>
-            </article>
-
-            <article class="klein-chapter" data-step="0.4">
-              <div class="klein-eyebrow">03 · Focus</div>
-              <h2 class="klein-headline">
-                Context for <em>coding agents</em>
-              </h2>
-              <p class="klein-body">
-                The core of my current work: how to retrieve the right slice
-                of a codebase for a model, how to measure whether the answer
-                is any good, and how to make both reliable under real load.
-              </p>
-              <div class="klein-meta">
-                <span>Retrieval</span>
-                <span>Evaluation</span>
-                <span>Agents</span>
-                <span>Infrastructure</span>
-              </div>
-            </article>
-
-            <article class="klein-chapter" data-step="0.6">
-              <div class="klein-eyebrow">04 · Writing</div>
-              <h2 class="klein-headline">
-                Selected <em>essays</em>
-              </h2>
-              <p class="klein-body">
-                Notes on applied machine learning, engineering practice, and
-                the occasional detour.
-              </p>
-              <div class="klein-chapter-links">
-                <a
-                  href="https://www.cladlabs.ai/blog/ai-code-review"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <span class="k-title">How AI is transforming code review</span>
-                  <span class="k-desc"
-                    >A survey of automated review, from static checks to
-                    agent-assisted pull requests.</span
-                  >
-                </a>
-                <a
-                  href="https://www.cladlabs.ai/blog/intelligent-code-completion"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <span class="k-title"
-                    >Context management for code generation</span
-                  >
-                  <span class="k-desc"
-                    >Merkle trees, ASTs, and vector search for
-                    repository-scale retrieval.</span
-                  >
-                </a>
-                <a href="/posts/driving_chp1.html">
-                  <span class="k-title">Modern Noir — Chapter 1</span>
-                  <span class="k-desc"
-                    >Short fiction. Opening chapter.</span
-                  >
-                </a>
-                <a href="/posts/paradise_lost_petrarch.html">
-                  <span class="k-title"
-                    >Petrarchan love &amp; Eve's dream of Satan</span
-                  >
-                  <span class="k-desc"
-                    >An undergraduate essay on <em>Paradise Lost</em>.</span
-                  >
-                </a>
-              </div>
-            </article>
-
-            <article class="klein-chapter" data-step="0.8">
-              <div class="klein-eyebrow">05 · In progress</div>
-              <h2 class="klein-headline">
-                Coming <em>soon</em>
-              </h2>
-              <p class="klein-body">
-                Pieces currently in draft.
-              </p>
-              <div class="klein-chapter-links klein-chapter-links--static">
-                <div>
-                  <span class="k-badge">Coming soon</span>
-                  <span class="k-title"
-                    >Koopman operators — a practical intro for time-series
-                    ML</span
-                  >
-                  <span class="k-desc"
-                    >DMD + Koopman embeddings against chaotic fab-line
-                    data.</span
-                  >
-                </div>
-                <div>
-                  <span class="k-badge">Coming soon</span>
-                  <span class="k-title"
-                    >Injecting LLM ads — lessons from YC</span
-                  >
-                  <span class="k-desc"
-                    >Vector-DB design, prompt hardening, auction-less ad
-                    retrieval.</span
-                  >
-                </div>
-              </div>
-            </article>
-
-            <article class="klein-chapter" data-step="1">
-              <div class="klein-eyebrow">06 · Contact</div>
-              <h2 class="klein-headline">
-                Get in <em>touch</em>
-              </h2>
-              <p class="klein-body">
-                Open to conversations about AI infrastructure, research
-                collaboration, and engineering roles at Clad Labs.
-              </p>
-              <div class="klein-chapter-links">
-                <a
-                  href="https://www.linkedin.com/in/richard-wang-39554994/"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <span class="k-title">LinkedIn</span>
-                  <span class="k-desc">Professional contact.</span>
-                </a>
-                <a
-                  href="https://x.com/zzzbuggg"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <span class="k-title">Twitter / X</span>
-                  <span class="k-desc">Short-form writing.</span>
-                </a>
-                <a
-                  href="https://github.com/rjdw"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <span class="k-title">GitHub</span>
-                  <span class="k-desc">Open-source work.</span>
-                </a>
-                <a href="#essays">
-                  <span class="k-title">Essay archive</span>
-                  <span class="k-desc">Full writing index below.</span>
-                </a>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <div class="klein-scroll-hint" aria-hidden="true">
-          <span>Scroll to enter</span>
-          <span class="line"></span>
+          <a class="hero-cta hero-cta--ghost" href="#essays">Read the essays</a>
         </div>
       </div>
-    </section>
 
-    <!-- Smooth gradient fade into the blog surface -->
-    <div class="klein-tail home-only" aria-hidden="true"></div>
+      <div class="hero-scroll-hint" aria-hidden="true">
+        <span>Scroll</span>
+        <span class="line"></span>
+      </div>
+    </section>
 
     <!-- ──────────────────────────────────────────────────────────────
          BLOG SURFACE  (lives inside #page-content so the PJAX router
@@ -483,20 +358,21 @@
           <details class="blog-faq-item">
             <summary>What tech stack runs this site?</summary>
             <p>
-              Cloudflare Pages + Tailwind CSS + Vite + Three.js (for the
-              Klein bottle scroll journey) + a Cloudflare Worker that
-              proxies Google Gemini for the chat widget.
+              Cloudflare Pages + Tailwind CSS + Vite + a Cloudflare Worker
+              that proxies Google Gemini for the chat widget. The hero is
+              pure CSS and SVG — no WebGL, no animation libraries.
             </p>
           </details>
           <details class="blog-faq-item">
-            <summary>How does the Klein-bottle scroll thing work?</summary>
+            <summary>What happened to the Klein bottle?</summary>
             <p>
-              A WebGL canvas renders Hermann Karcher's twisting Klein
-              bottle using its parametric equations. Your scroll position
-              maps to a rotation of the surface; the bottle sits on a
-              static lean-back pitch so the ring's hole never stares the
-              camera down. Each scroll gesture advances exactly one
-              chapter — click any dot on the right rail to jump.
+              An earlier version of this page rendered a physically-based
+              Klein bottle in WebGL and hijacked every scroll gesture to
+              spin it. Gorgeous, but the shader compile stalled first
+              paint and the scroll-jacking made the whole page feel
+              sluggish. It's been retired in favor of a hand-drawn Möbius
+              ribbon whose animations run entirely on the compositor — the
+              page now scrolls natively at full frame rate.
             </p>
           </details>
           <details class="blog-faq-item">

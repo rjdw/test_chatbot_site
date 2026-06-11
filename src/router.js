@@ -1,43 +1,10 @@
 // ────────────────────────────────────────────────────────────
-// tiny PJAX router – keeps the chat widget & Klein journey alive
+// tiny PJAX router – keeps the chat widget & hero alive
 // plus per-URL scroll restoration so "Back to essays" returns to
 // the exact card the user clicked from.
 // ────────────────────────────────────────────────────────────
 
 const container = document.getElementById("page-content");
-
-// The Klein journey module is loaded dynamically from main.js so that
-// blog / archive / post pages don't pay the Three.js bundle cost. When
-// the router injects the journey's DOM after a PJAX navigation we need
-// a handle to the same init, but via a dynamic import so the big chunk
-// stays separated.
-async function dynamicallyInitJourney(root) {
-  try {
-    // Low-power / no-WebGL devices get the lite variant.
-    const webglOk = (() => {
-      try {
-        const c = document.createElement("canvas");
-        return !!(c.getContext("webgl2") || c.getContext("webgl"));
-      } catch {
-        return false;
-      }
-    })();
-    const prefersReduce = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (!webglOk || prefersReduce) {
-      const { initKleinJourney } = await import(
-        "./klein/klein-journey-lite.js"
-      );
-      initKleinJourney(root);
-      return;
-    }
-    const { initKleinJourney } = await import("./klein/klein-journey.js");
-    initKleinJourney(root);
-  } catch (e) {
-    console.error("[router] journey init failed", e);
-  }
-}
 
 // Own scroll restoration; the default "auto" restoration fires before our
 // PJAX content swap finishes and is useless.
@@ -152,36 +119,26 @@ function showHomeOnly(show) {
 }
 
 /**
- * Ensure the Klein journey markup exists at the top of <body> when we are
- * on the home page.
+ * Ensure the hero markup exists at the top of <body> when we are on the
+ * home page. The hero is pure CSS/SVG, so cloning the markup is all it
+ * takes — there is no JS to (re)initialise.
  */
-function ensureKleinJourney(frag) {
-  if (document.getElementById("klein-journey")) return;
+function ensureHero(frag) {
+  if (document.getElementById("site-hero")) return;
   if (!frag) return;
 
-  const journey = frag.getElementById
-    ? frag.getElementById("klein-journey")
-    : frag.querySelector("#klein-journey");
-  const tail = frag.querySelector(".klein-tail");
+  const hero = frag.getElementById
+    ? frag.getElementById("site-hero")
+    : frag.querySelector("#site-hero");
+  if (!hero) return;
 
-  if (!journey) return;
-
-  const body = document.body;
+  const clonedHero = hero.cloneNode(true);
   const mainEl = document.querySelector("main#page-content");
-
-  const clonedJourney = journey.cloneNode(true);
-  clonedJourney.dataset.kleinInitialized = "";
-  const clonedTail = tail ? tail.cloneNode(true) : null;
-
   if (mainEl) {
-    body.insertBefore(clonedJourney, mainEl);
-    if (clonedTail) body.insertBefore(clonedTail, mainEl);
+    document.body.insertBefore(clonedHero, mainEl);
   } else {
-    body.prepend(clonedJourney);
-    if (clonedTail) clonedJourney.after(clonedTail);
+    document.body.prepend(clonedHero);
   }
-
-  dynamicallyInitJourney(clonedJourney);
 }
 
 /**
@@ -250,7 +207,7 @@ async function navigate(url, { push = true, popstateState = null } = {}) {
   }
 
   const home = isHomePath(url);
-  if (home) ensureKleinJourney(frag);
+  if (home) ensureHero(frag);
   showHomeOnly(home);
 
   // Decide where to land. Priority:

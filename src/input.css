@@ -15,9 +15,6 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  /* Anchor targets need to account for the 620vh sticky journey above
-     them — scroll-margin-top pushes the target down so the section lands
-     at the top of the viewport rather than behind the sticky canvas. */
   #essays, #faq, #about, #in-prep {
     scroll-margin-top: 1rem;
   }
@@ -58,65 +55,161 @@
   }
 }
 
-/* ─── Klein bottle scroll journey ──────────────────── */
+/* ─── Hero ─────────────────────────────────────────── */
+/* Pure CSS + SVG. Every animation here is transform/opacity-only (or
+   SVG dash flow on a small layer), so it all runs on the compositor
+   and never blocks the main thread or the user's scroll. */
 @layer components {
-  .klein-journey {
+  .site-hero {
     position: relative;
     width: 100%;
-    /* 6 chapters × ~100vh of scroll each feels ideal. */
-    height: 620vh;
+    min-height: 100svh;
     color: #f2f4ff;
     isolation: isolate;
     background: #05060a;
-  }
-
-  .klein-stage {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    width: 100%;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-
-  .klein-canvas {
+  /* Fade into the light blog surface below. */
+  .site-hero::after {
+    content: "";
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 16vh;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(5, 6, 10, 0) 0%,
+      rgba(5, 6, 10, 0.55) 55%,
+      #fbfaf7 100%
+    );
+    z-index: 3;
   }
 
-  /* Radial vignette + grain overlay to make the 3D feel cinematic */
-  .klein-vignette {
+  .hero-bg {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background:
-      radial-gradient(
-        ellipse at center,
-        rgba(0, 0, 0, 0) 40%,
-        rgba(0, 0, 0, 0.55) 100%
-      ),
-      linear-gradient(
-        180deg,
-        rgba(5, 6, 10, 0.35) 0%,
-        rgba(5, 6, 10, 0) 20%,
-        rgba(5, 6, 10, 0) 80%,
-        rgba(5, 6, 10, 0.5) 100%
-      );
-    mix-blend-mode: multiply;
+    z-index: 0;
   }
 
-  .klein-overlay {
+  /* Static starfield: two tiling radial-gradient layers. Zero cost —
+     painted once, never animated. */
+  .hero-stars {
     position: absolute;
     inset: 0;
-    pointer-events: none;
-    display: grid;
-    grid-template-columns: 1fr;
-    align-content: stretch;
+    background-image:
+      radial-gradient(1px 1px at 22px 34px, rgba(220, 230, 255, 0.9), transparent 60%),
+      radial-gradient(1px 1px at 120px 90px, rgba(200, 214, 255, 0.7), transparent 60%),
+      radial-gradient(1.5px 1.5px at 190px 150px, rgba(255, 230, 240, 0.8), transparent 60%),
+      radial-gradient(1px 1px at 70px 200px, rgba(220, 230, 255, 0.6), transparent 60%),
+      radial-gradient(1.5px 1.5px at 250px 60px, rgba(235, 240, 255, 0.85), transparent 60%),
+      radial-gradient(1px 1px at 300px 220px, rgba(200, 214, 255, 0.55), transparent 60%);
+    background-size: 340px 280px;
+    opacity: 0.7;
   }
 
-  .klein-hud {
+  /* Aurora blobs: blurred once at raster time, then drifted with
+     transform-only keyframes on their own compositor layers. */
+  .hero-aurora {
+    position: absolute;
+    width: 58vmax;
+    height: 58vmax;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.4;
+    will-change: transform;
+  }
+  .hero-aurora--a {
+    left: -14vmax;
+    top: -18vmax;
+    background: radial-gradient(
+      circle at 35% 35%,
+      rgba(94, 200, 255, 0.5) 0%,
+      rgba(94, 200, 255, 0) 65%
+    );
+    animation: hero-drift-a 26s ease-in-out infinite alternate;
+  }
+  .hero-aurora--b {
+    right: -18vmax;
+    top: -8vmax;
+    background: radial-gradient(
+      circle at 60% 40%,
+      rgba(199, 123, 255, 0.42) 0%,
+      rgba(199, 123, 255, 0) 65%
+    );
+    animation: hero-drift-b 32s ease-in-out infinite alternate;
+  }
+  .hero-aurora--c {
+    left: 22vw;
+    bottom: -30vmax;
+    background: radial-gradient(
+      circle at 50% 30%,
+      rgba(255, 122, 167, 0.35) 0%,
+      rgba(255, 178, 148, 0) 65%
+    );
+    animation: hero-drift-c 38s ease-in-out infinite alternate;
+  }
+  @keyframes hero-drift-a {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(7vw, 5vh, 0) scale(1.15); }
+  }
+  @keyframes hero-drift-b {
+    from { transform: translate3d(0, 0, 0) scale(1.1); }
+    to   { transform: translate3d(-6vw, 7vh, 0) scale(0.95); }
+  }
+  @keyframes hero-drift-c {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(4vw, -6vh, 0) scale(1.12); }
+  }
+
+  /* Möbius ribbon */
+  .hero-ribbon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(120vw, 1300px);
+    transform: translate(-50%, -52%);
+    opacity: 0.9;
+  }
+  .hero-ribbon-halo {
+    stroke: url(#hero-ribbon-grad);
+    stroke-width: 26;
+    opacity: 0.22;
+  }
+  .hero-ribbon-edge {
+    stroke: rgba(200, 214, 255, 0.18);
+    stroke-width: 1;
+  }
+  .hero-ribbon-main {
+    stroke: url(#hero-ribbon-grad);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+  .hero-ribbon-flow {
+    stroke: rgba(255, 255, 255, 0.95);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 70 930; /* normalised via pathLength="1000" */
+    animation: hero-flow 11s linear infinite;
+    filter: drop-shadow(0 0 6px rgba(213, 160, 255, 0.9));
+  }
+  @keyframes hero-flow {
+    from { stroke-dashoffset: 0; }
+    to   { stroke-dashoffset: -1000; }
+  }
+  .hero-comet {
+    fill: #ffffff;
+    filter: drop-shadow(0 0 8px rgba(160, 200, 255, 1))
+      drop-shadow(0 0 18px rgba(199, 123, 255, 0.8));
+  }
+
+  /* Top bar */
+  .hero-hud {
     position: absolute;
     top: 0;
     left: 0;
@@ -125,12 +218,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    pointer-events: auto;
     z-index: 10;
     font-family: var(--font-inter);
   }
-
-  .klein-hud-brand {
+  .hero-hud-brand {
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: -0.01em;
@@ -141,14 +232,12 @@
     align-items: center;
     gap: 0.6rem;
   }
-
-  .klein-hud-brand .klein-infinity {
+  .hero-hud-brand .hero-infinity {
     width: 22px;
     height: 14px;
     stroke: #cbd6ff;
   }
-
-  .klein-hud-nav {
+  .hero-hud-nav {
     display: flex;
     gap: 1.5rem;
     font-size: 0.82rem;
@@ -156,51 +245,28 @@
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.72);
   }
-  .klein-hud-nav a {
+  .hero-hud-nav a {
     color: inherit;
     text-decoration: none;
     transition: color 120ms ease;
-    cursor: pointer;
-    pointer-events: auto;
   }
-  .klein-hud-nav a:hover { color: #fff; }
+  .hero-hud-nav a:hover { color: #fff; }
 
-  .klein-chapters {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 0 max(1.25rem, 5vw);
-  }
-
-  .klein-chapter {
-    position: absolute;
+  /* Copy */
+  .hero-content {
+    position: relative;
+    z-index: 2;
     max-width: 46rem;
     width: min(92vw, 46rem);
-    opacity: 0;
-    /* Six chapters stack absolutely at the same spot. Even when one is
-       invisible its child anchors would still eat clicks for the
-       chapter visible underneath, so the WHOLE chapter subtree is
-       click-through by default. The JS flips this to `auto` only on
-       the currently-visible chapter. */
-    pointer-events: none;
-    transition: opacity 450ms ease;
+    padding: 6rem max(1.25rem, 5vw);
     text-align: left;
-    /* Keep text crisp. translate3d + will-change forces a compositor
-       layer whose sub-pixel rasterisation makes Fraunces and Inter look
-       soft on HiDPI. A small text-shadow (blur ≤ 6 px) for legibility
-       over the 3D canvas is fine; the previous 24 px blur was the
-       cause of the 'pixelated' look the user flagged. */
     text-shadow: 0 1px 6px rgba(5, 6, 10, 0.45);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  .klein-chapter.is-active {
-    pointer-events: auto;
-  }
 
-  .klein-eyebrow {
+  .hero-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 0.65rem;
@@ -210,7 +276,7 @@
     color: rgba(200, 214, 255, 0.75);
     margin-bottom: 1.1rem;
   }
-  .klein-eyebrow::before {
+  .hero-eyebrow::before {
     content: "";
     width: 34px;
     height: 1px;
@@ -221,28 +287,20 @@
     );
   }
 
-  .klein-headline {
+  .hero-headline {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(2.25rem, 6.5vw, 4.8rem);
-    line-height: 1.18;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 1.14;
     letter-spacing: -0.025em;
     margin: 0 0 1rem;
     color: #fefeff;
   }
-  .klein-headline em {
+  .hero-headline em {
     font-style: italic;
-    /* Two separate clipping problems fixed together:
-       1) Trailing horizontal overhang of italic glyphs (f, y, s) –
-          fixed by inline-block + padding-right and a balancing
-          negative margin-right.
-       2) Descender clipping of g/y/p — display:inline-block +
-          background-clip:text makes the gradient's paint box the
-          inline-block's CONTENT box, which stops at the baseline-ish
-          when line-height is tight.  padding-bottom extends the
-          clip-box below the baseline so the descender gets its paint.
-          margin-bottom balances the extra padding so vertical rhythm
-          with the paragraph below is unchanged. */
+    /* inline-block + padding keeps the italic overhang and descenders
+       inside the background-clip:text paint box; the negative margins
+       cancel the extra space so rhythm is unchanged. */
     display: inline-block;
     padding: 0 0.22em 0.14em 0.02em;
     margin: 0 -0.08em -0.14em 0;
@@ -261,20 +319,20 @@
     -webkit-text-fill-color: transparent;
   }
 
-  .klein-body {
+  .hero-body {
     font-size: clamp(1rem, 1.6vw, 1.2rem);
     line-height: 1.55;
     color: rgba(235, 240, 255, 0.82);
     max-width: 36rem;
   }
 
-  .klein-meta {
+  .hero-meta {
     margin-top: 1.5rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.55rem;
   }
-  .klein-meta span {
+  .hero-meta span {
     font-size: 0.78rem;
     letter-spacing: 0.08em;
     padding: 0.3rem 0.75rem;
@@ -282,11 +340,16 @@
     border-radius: 999px;
     color: rgba(235, 240, 255, 0.78);
     background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(6px);
   }
 
-  .klein-cta {
+  .hero-actions {
     margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero-cta {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
@@ -300,130 +363,25 @@
     box-shadow: 0 8px 30px -10px rgba(150, 180, 255, 0.55);
     transition: transform 160ms ease, box-shadow 160ms ease;
   }
-  .klein-cta:hover {
+  .hero-cta:hover {
     transform: translateY(-1px);
     box-shadow: 0 12px 32px -8px rgba(180, 200, 255, 0.65);
   }
-  .klein-cta svg { width: 14px; height: 14px; }
-
-  .klein-chapter-links {
-    margin-top: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 0.75rem;
-  }
-  .klein-chapter-links a,
-  .klein-chapter-links--static > div {
-    display: block;
-    padding: 0.9rem 1rem;
-    border: 1px solid rgba(200, 214, 255, 0.18);
-    border-radius: 0.9rem;
+  .hero-cta svg { width: 14px; height: 14px; }
+  .hero-cta--ghost {
     color: #f2f4ff;
-    text-decoration: none;
-    background: rgba(10, 12, 24, 0.35);
-    backdrop-filter: blur(10px);
-    transition: border-color 140ms ease, background 140ms ease,
-      transform 140ms ease;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(220, 226, 255, 0.28);
+    box-shadow: none;
   }
-  .klein-chapter-links a:hover {
-    border-color: rgba(220, 226, 255, 0.45);
-    background: rgba(20, 24, 48, 0.55);
-    transform: translateY(-1px);
-  }
-  .klein-chapter-links--static > div {
-    cursor: default;
-    opacity: 0.82;
-  }
-  .klein-chapter-links .k-title {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    letter-spacing: -0.01em;
-  }
-  .klein-chapter-links .k-desc {
-    display: block;
-    color: rgba(200, 214, 255, 0.7);
-    font-size: 0.85rem;
-    margin-top: 0.2rem;
-  }
-  .klein-chapter-links .k-badge {
-    display: inline-block;
-    margin-bottom: 0.5rem;
-    padding: 0.18rem 0.55rem;
-    border-radius: 999px;
+  .hero-cta--ghost:hover {
+    border-color: rgba(220, 226, 255, 0.55);
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(220, 226, 255, 0.25);
-    font-size: 0.64rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: rgba(220, 226, 255, 0.85);
+    box-shadow: none;
   }
 
-  /* Right-edge progress rail */
-  .klein-progress {
-    position: absolute;
-    right: clamp(1rem, 2.5vw, 2.5rem);
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    pointer-events: auto;
-    z-index: 3;
-  }
-  .klein-progress-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.22em;
-    color: rgba(200, 214, 255, 0.7);
-    font-variant-numeric: tabular-nums;
-  }
-  .klein-progress-track {
-    position: relative;
-    width: 2px;
-    height: clamp(180px, 28vh, 280px);
-    background: rgba(220, 226, 255, 0.15);
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .klein-progress-bar {
-    position: absolute;
-    inset: 0;
-    transform-origin: top center;
-    transform: scaleY(0);
-    background: linear-gradient(
-      180deg,
-      #9ec8ff 0%,
-      #d5a0ff 50%,
-      #ffb194 100%
-    );
-  }
-  .klein-step-dots {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-    margin-top: 0.3rem;
-  }
-  .klein-step-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 999px;
-    border: 1px solid rgba(220, 226, 255, 0.45);
-    background: transparent;
-    cursor: pointer;
-    transition: background 180ms ease, border-color 180ms ease,
-      transform 180ms ease;
-    padding: 0;
-  }
-  .klein-step-dot.is-active {
-    background: #e9e5ff;
-    border-color: #ffffff;
-    transform: scale(1.2);
-    box-shadow: 0 0 12px rgba(210, 200, 255, 0.55);
-  }
-
-  /* Scroll hint that fades as user begins scrolling */
-  .klein-scroll-hint {
+  /* Scroll hint */
+  .hero-scroll-hint {
     position: absolute;
     bottom: 1.75rem;
     left: 50%;
@@ -437,9 +395,9 @@
     align-items: center;
     gap: 0.5rem;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
   }
-  .klein-scroll-hint .line {
+  .hero-scroll-hint .line {
     width: 1px;
     height: 34px;
     background: linear-gradient(
@@ -447,44 +405,31 @@
       rgba(220, 226, 255, 0.7),
       rgba(220, 226, 255, 0)
     );
-    animation: klein-pulse 2.4s ease-in-out infinite;
+    animation: hero-pulse 2.4s ease-in-out infinite;
   }
-  @keyframes klein-pulse {
+  @keyframes hero-pulse {
     0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
     50% { transform: scaleY(1); opacity: 1; }
   }
 
-  /* Transition into the essays section: a soft gradient fade so the
-     black void gives way to the light blog surface. */
-  .klein-tail {
-    position: relative;
-    height: 28vh;
-    margin-top: -28vh;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      rgba(5, 6, 10, 0) 0%,
-      rgba(5, 6, 10, 0.8) 55%,
-      #fbfaf7 100%
-    );
-    z-index: 2;
-  }
-
   @media (max-width: 720px) {
-    .klein-hud { padding: 1rem 1.1rem; }
-    .klein-hud-nav { display: none; }
-    .klein-chapters { padding: 0 1.1rem; }
-    .klein-progress { right: 0.6rem; }
-    .klein-progress-track { height: 180px; }
+    .hero-hud { padding: 1rem 1.1rem; }
+    .hero-hud-nav { display: none; }
+    .hero-content { padding: 5.5rem 1.1rem 4rem; }
+    .hero-ribbon { width: 175vw; opacity: 0.55; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .klein-chapter { transition: none; }
-    .klein-scroll-hint .line { animation: none; }
+    .hero-aurora,
+    .hero-ribbon-flow,
+    .hero-scroll-hint .line {
+      animation: none;
+    }
+    .hero-comet { display: none; }
   }
 }
 
-/* ─── Blog surface (below the Klein journey) ──────── */
+/* ─── Blog surface (below the hero) ───────────────── */
 @layer components {
   .blog-surface {
     max-width: 54rem;
@@ -539,7 +484,7 @@
     margin: 0;
     color: #0b0d18;
   }
-  /* Same italic-gradient treatment as the Klein headlines but on light. */
+  /* Same italic-gradient treatment as the hero headline but on light. */
   .blog-em {
     font-style: italic;
     display: inline-block;
@@ -1608,46 +1553,5 @@ body { background: #fbfaf7; }
     background: rgba(47, 75, 189, 0.08);
     border-radius: 999px;
   }
-}
-
-/* ─── WebGL low-power / unsupported fallback ─────── */
-@layer components {
-  .klein-fallback {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-        ellipse at 50% 45%,
-        #1a1240 0%,
-        #0d0a24 55%,
-        #05070e 100%
-      );
-    overflow: hidden;
-  }
-  .klein-fallback::after {
-    content: "";
-    position: absolute;
-    inset: -10%;
-    background: radial-gradient(
-        circle at 30% 32%,
-        rgba(170, 210, 255, 0.22) 0%,
-        rgba(170, 210, 255, 0) 42%
-      ),
-      radial-gradient(
-        circle at 70% 60%,
-        rgba(255, 175, 190, 0.18) 0%,
-        rgba(255, 175, 190, 0) 40%
-      );
-  }
-  .klein-fallback-infinity {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: clamp(280px, 55vw, 620px);
-    transform: translate(-50%, -50%);
-    filter: drop-shadow(0 8px 30px rgba(120, 80, 255, 0.22));
-    opacity: 0.75;
-  }
-  /* Hide the scroll hint and vignette extras that assume a live canvas. */
-  .klein-journey.is-fallback .klein-scroll-hint { opacity: 0.35; }
 }
 

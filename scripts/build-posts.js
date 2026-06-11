@@ -12,9 +12,9 @@ marked.setOptions({
 });
 
 // Template for blog posts. The shell is kept deliberately spare — the
-// surrounding site (including the Klein bottle hero on `/`) is owned by
-// index.html; posts just render a centred reading column that inherits
-// the global Fraunces/Inter system.
+// surrounding site (including the hero on `/`) is owned by index.html;
+// posts just render a centred reading column that inherits the global
+// Fraunces/Inter system.
 const POST_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
   <head>
