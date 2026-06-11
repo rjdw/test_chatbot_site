@@ -175,8 +175,12 @@ async function renderHomePress() {
   const host = document.getElementById("home-press-list");
   if (!host) return;
   const data = await loadContent();
-  const press = data.press || [];
-  if (press.length === 0) return;
+  const all = data.press || [];
+  if (all.length === 0) return;
+  // Home shows only the headline coverage; the full list lives in the
+  // archive under /writing?kind=press.
+  const featured = all.filter((p) => p.featured);
+  const press = featured.length > 0 ? featured : all.slice(0, 3);
   host.innerHTML = press
     .map(
       (p) => `

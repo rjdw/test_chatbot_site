@@ -208,7 +208,8 @@
       "date": "2025-11-13",
       "dateLabel": "Nov 13, 2025",
       "href": "https://www.forbes.com/sites/dariashunina/2025/11/13/the-top-startups-to-watch-from-y-combinators-fall-2025-batch/",
-      "tags": ["YC", "Clad Labs"]
+      "tags": ["YC", "Clad Labs"],
+      "featured": true
     },
     {
       "id": "techcrunch-chad-launch",
@@ -218,7 +219,8 @@
       "date": "2025-11-12",
       "dateLabel": "Nov 12, 2025",
       "href": "https://techcrunch.com/2025/11/12/chad-the-brainrot-ide-is-a-new-y-combinator-backed-product-so-wild-people-thought-it-was-fake/",
-      "tags": ["Chad IDE", "Launch"]
+      "tags": ["Chad IDE", "Launch"],
+      "featured": true
     },
     {
       "id": "yahoo-chad-profile",
@@ -228,7 +230,8 @@
       "date": "2025-11-15",
       "dateLabel": "Nov 2025",
       "href": "https://tech.yahoo.com/computing/articles/meet-chad-brainrot-ide-product-180116591.html",
-      "tags": ["Chad IDE"]
+      "tags": ["Chad IDE"],
+      "featured": true
     },
     {
       "id": "futurism-chad",

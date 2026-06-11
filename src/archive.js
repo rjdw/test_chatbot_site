@@ -76,13 +76,16 @@ async function loadContent() {
   }
 }
 
-function normalize({ essays = [], notes = [], drafts = [], media = [] }) {
+function normalize({ essays = [], notes = [], drafts = [], media = [], press = [] }) {
   const items = [];
   for (const e of essays) {
     items.push({ ...e, kind: "essay" });
   }
   for (const n of notes) {
     items.push({ ...n, kind: "note" });
+  }
+  for (const p of press) {
+    items.push({ ...p, kind: "press", external: true });
   }
   for (const m of media) {
     const slug =
@@ -236,8 +239,15 @@ function render() {
         : `${visible.length} pieces`;
   }
   if (active) {
+    const plural = {
+      essay: "essays",
+      note: "notes",
+      media: "media",
+      press: "press",
+      draft: "drafts",
+    };
     const parts = [];
-    if (state.kind !== "all") parts.push(state.kind + "s");
+    if (state.kind !== "all") parts.push(plural[state.kind] || state.kind);
     if (state.tags.size > 0)
       parts.push("tagged " + Array.from(state.tags).join(" + "));
     if (state.query) parts.push(`“${state.query}”`);
@@ -263,7 +273,13 @@ function renderItem(it, index) {
     : "";
 
   const meta = [];
-  if (it.date) meta.push(`<span>${formatDate(it.date)}</span>`);
+  if (it.outlet) meta.push(`<span>${escapeHtml(it.outlet)}</span>`);
+  if (it.date) {
+    if (meta.length) meta.push(`<span>·</span>`);
+    meta.push(
+      `<span>${it.dateLabel ? escapeHtml(it.dateLabel) : formatDate(it.date)}</span>`
+    );
+  }
   if (it.readTime) {
     if (meta.length) meta.push(`<span>·</span>`);
     meta.push(`<span>${escapeHtml(it.readTime)}</span>`);
@@ -278,6 +294,8 @@ function renderItem(it, index) {
         ? "Essay"
         : it.kind === "media"
         ? "Media"
+        : it.kind === "press"
+        ? "Press"
         : null;
     if (kindLabel) meta.push(`<span class="archive-kind">${kindLabel}</span>`);
   }
