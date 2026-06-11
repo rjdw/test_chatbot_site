@@ -1,14 +1,3 @@
-// Defer the chat widget until the browser is idle post-first-paint.
-// It pulls in marked + DOMPurify + axios + Tailwind-in-shadow-DOM, all
-// non-critical. Loading it inline on main.js caused ~200 ms of JS parse
-// on first load that was competing with first paint.
-const loadChatWhenIdle = () => import("./chat/widget-loader.js");
-if ("requestIdleCallback" in window) {
-  window.requestIdleCallback(loadChatWhenIdle, { timeout: 3000 });
-} else {
-  setTimeout(loadChatWhenIdle, 1500);
-}
-
 // ────────────────────────────────────────────────────────────
 // Home notes preview (populated from /content.json)
 // ────────────────────────────────────────────────────────────
@@ -182,6 +171,40 @@ function probeThumbnails(root) {
   });
 }
 
+async function renderHomePress() {
+  const host = document.getElementById("home-press-list");
+  if (!host) return;
+  const data = await loadContent();
+  const press = data.press || [];
+  if (press.length === 0) return;
+  host.innerHTML = press
+    .map(
+      (p) => `
+    <li class="blog-entry">
+      <a class="blog-entry-link press-entry-link" href="${attr(p.href || "#")}" target="_blank" rel="noopener">
+        <span class="press-outlet">${escapeHtml(p.outlet || "")}</span>
+        <div class="blog-entry-body">
+          <h3 class="blog-entry-title">${escapeHtml(p.title || "")}</h3>
+          ${
+            p.description
+              ? `<p class="blog-entry-desc">${escapeHtml(p.description)}</p>`
+              : ""
+          }
+          <div class="blog-entry-meta">
+            ${p.dateLabel ? `<span>${escapeHtml(p.dateLabel)}</span>` : ""}
+            ${(p.tags || [])
+              .slice(0, 2)
+              .map((t) => `<span class="blog-tag">${escapeHtml(t)}</span>`)
+              .join("")}
+          </div>
+        </div>
+        <span class="blog-entry-arrow" aria-hidden="true">↗</span>
+      </a>
+    </li>`
+    )
+    .join("");
+}
+
 async function renderHomeNotes() {
   const host = document.getElementById("home-notes-list");
   if (!host) return;
@@ -312,6 +335,7 @@ function relabelBackLinks() {
 function boot() {
   renderHomeEssays();
   renderHomeMedia();
+  renderHomePress();
   renderHomeNotes();
   bootArchiveIfPresent();
   bootMediaIfPresent();
@@ -323,6 +347,7 @@ document.addEventListener("pjax:navigated", () => {
   _contentCache = null; // allow fresh data on nav
   renderHomeEssays();
   renderHomeMedia();
+  renderHomePress();
   renderHomeNotes();
   bootArchiveIfPresent();
   bootMediaIfPresent();

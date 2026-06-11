@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────
-// tiny PJAX router – keeps the chat widget & hero alive
+// tiny PJAX router – keeps the hero alive across navigations
 // plus per-URL scroll restoration so "Back to essays" returns to
 // the exact card the user clicked from.
 // ────────────────────────────────────────────────────────────
