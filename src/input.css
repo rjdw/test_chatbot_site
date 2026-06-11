@@ -15,10 +15,7 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  /* Anchor targets need to account for the 620vh sticky journey above
-     them — scroll-margin-top pushes the target down so the section lands
-     at the top of the viewport rather than behind the sticky canvas. */
-  #essays, #faq, #about, #in-prep {
+  #essays, #faq, #about, #in-prep, #media, #press, #notes {
     scroll-margin-top: 1rem;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -26,97 +23,99 @@
   }
 }
 
-/* ─── chat bubble tweaks ───────────────────────────── */
-@layer utilities {
-  /* main bubble */
-  .chat-bubble {
-    @apply rounded-2xl px-4 py-2 break-words whitespace-pre-wrap
-           overflow-x-auto shadow;
-
-    /* arbitrary value → write raw CSS */
-    max-width: 95%;
-  }
-
-  /* variant for the user bubble (blue on the right) */
-  .chat-bubble-user {
-    @apply bg-blue-500 text-white;
-  }
-
-  /* default bot bubble (grey on the left) */
-  .chat-bubble-bot {
-    @apply bg-gray-200 text-gray-900;
-  }
-
-  /* wrap code so it never forces the bubble wider */
-  .chat-bubble pre {
-    white-space: pre-wrap; /* allow wrapping lines */
-    word-break: break-all; /* break long words/URLs */
-  }
-
-  .chat-bubble p {
-    margin: 0;
-  }
-}
-
-/* ─── Klein bottle scroll journey ──────────────────── */
+/* ─── Hero ─────────────────────────────────────────── */
+/* Pure CSS + SVG. Every animation here is transform/opacity-only (or
+   SVG dash flow on a small layer), so it all runs on the compositor
+   and never blocks the main thread or the user's scroll. */
 @layer components {
-  .klein-journey {
+  .site-hero {
     position: relative;
     width: 100%;
-    /* 6 chapters × ~100vh of scroll each feels ideal. */
-    height: 620vh;
-    color: #f2f4ff;
+    min-height: 100svh;
+    color: #edf2f5;
     isolation: isolate;
-    background: #05060a;
-  }
-
-  .klein-stage {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    width: 100%;
+    background: #070b10;
     overflow: hidden;
+    display: flex;
+    /* Graphic-tee composition: the print owns the upper half, the
+       copy sits in the lower third. */
+    align-items: flex-end;
+    justify-content: center;
   }
-
-  .klein-canvas {
+  /* Fade into the light blog surface below. */
+  .site-hero::after {
+    content: "";
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 16vh;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(7, 11, 16, 0) 0%,
+      rgba(7, 11, 16, 0.55) 55%,
+      #f6f8fa 100%
+    );
+    z-index: 3;
   }
 
-  /* Radial vignette + grain overlay to make the 3D feel cinematic */
-  .klein-vignette {
+  .hero-bg {
     position: absolute;
     inset: 0;
     pointer-events: none;
+    z-index: 0;
+  }
+
+  /* The large print: a single static webp, painted once. Anchored to
+     the upper-centre so the starburst sits above the headline. A very
+     slow compositor-only scale gives it breath without any JS. */
+  .hero-art {
+    position: absolute;
+    inset: 0;
+    background-image: url("/hero-art.webp");
+    background-size: cover;
+    background-position: center 30%;
+    animation: hero-breathe 36s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  @keyframes hero-breathe {
+    from { transform: scale(1); }
+    to   { transform: scale(1.05); }
+  }
+
+  /* Legibility shade: darken the lower portion where the copy sits and
+     pinch the far edges, leaving the artwork bright up top. */
+  .hero-shade {
+    position: absolute;
+    inset: 0;
     background:
-      radial-gradient(
-        ellipse at center,
-        rgba(0, 0, 0, 0) 40%,
-        rgba(0, 0, 0, 0.55) 100%
-      ),
       linear-gradient(
         180deg,
-        rgba(5, 6, 10, 0.35) 0%,
-        rgba(5, 6, 10, 0) 20%,
-        rgba(5, 6, 10, 0) 80%,
-        rgba(5, 6, 10, 0.5) 100%
+        rgba(7, 11, 16, 0.25) 0%,
+        rgba(7, 11, 16, 0) 30%,
+        rgba(7, 11, 16, 0.35) 62%,
+        rgba(7, 11, 16, 0.66) 100%
+      ),
+      radial-gradient(
+        ellipse 130% 100% at 50% 0%,
+        rgba(7, 11, 16, 0) 60%,
+        rgba(7, 11, 16, 0.45) 100%
       );
-    mix-blend-mode: multiply;
   }
 
-  .klein-overlay {
+  /* Film grain: a static SVG-noise tile. Painted once, never animated —
+     pure texture, zero runtime cost. */
+  .hero-grain {
     position: absolute;
     inset: 0;
-    pointer-events: none;
-    display: grid;
-    grid-template-columns: 1fr;
-    align-content: stretch;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="160" height="160" filter="url(%23n)"/></svg>');
+    background-size: 160px 160px;
+    opacity: 0.05;
   }
 
-  .klein-hud {
+  /* Top bar */
+  .hero-hud {
     position: absolute;
     top: 0;
     left: 0;
@@ -125,30 +124,26 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    pointer-events: auto;
     z-index: 10;
     font-family: var(--font-inter);
   }
-
-  .klein-hud-brand {
+  .hero-hud-brand {
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: -0.01em;
     font-size: 1.1rem;
-    color: #f2f4ff;
+    color: #edf2f5;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
   }
-
-  .klein-hud-brand .klein-infinity {
+  .hero-hud-brand .hero-infinity {
     width: 22px;
     height: 14px;
-    stroke: #cbd6ff;
+    stroke: #a9bfcb;
   }
-
-  .klein-hud-nav {
+  .hero-hud-nav {
     display: flex;
     gap: 1.5rem;
     font-size: 0.82rem;
@@ -156,341 +151,337 @@
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.72);
   }
-  .klein-hud-nav a {
+  .hero-hud-nav a {
     color: inherit;
     text-decoration: none;
     transition: color 120ms ease;
-    cursor: pointer;
-    pointer-events: auto;
   }
-  .klein-hud-nav a:hover { color: #fff; }
+  .hero-hud-nav a:hover { color: #fff; }
 
-  .klein-chapters {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 0 max(1.25rem, 5vw);
-  }
-
-  .klein-chapter {
-    position: absolute;
-    max-width: 46rem;
-    width: min(92vw, 46rem);
-    opacity: 0;
-    /* Six chapters stack absolutely at the same spot. Even when one is
-       invisible its child anchors would still eat clicks for the
-       chapter visible underneath, so the WHOLE chapter subtree is
-       click-through by default. The JS flips this to `auto` only on
-       the currently-visible chapter. */
-    pointer-events: none;
-    transition: opacity 450ms ease;
-    text-align: left;
-    /* Keep text crisp. translate3d + will-change forces a compositor
-       layer whose sub-pixel rasterisation makes Fraunces and Inter look
-       soft on HiDPI. A small text-shadow (blur ≤ 6 px) for legibility
-       over the 3D canvas is fine; the previous 24 px blur was the
-       cause of the 'pixelated' look the user flagged. */
-    text-shadow: 0 1px 6px rgba(5, 6, 10, 0.45);
+  /* Copy — centred, quiet, nothing behind the text */
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 44rem;
+    width: min(92vw, 44rem);
+    padding: 4rem max(1.25rem, 5vw) 13vh;
+    text-align: center;
+    text-shadow: 0 1px 18px rgba(11, 10, 9, 0.55);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  .klein-chapter.is-active {
-    pointer-events: auto;
-  }
 
-  .klein-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.65rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: rgba(200, 214, 255, 0.75);
-    margin-bottom: 1.1rem;
-  }
-  .klein-eyebrow::before {
-    content: "";
-    width: 34px;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      rgba(200, 214, 255, 0.8),
-      rgba(200, 214, 255, 0)
-    );
-  }
-
-  .klein-headline {
+  .hero-headline {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(2.25rem, 6.5vw, 4.8rem);
-    line-height: 1.18;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 1.14;
     letter-spacing: -0.025em;
     margin: 0 0 1rem;
-    color: #fefeff;
+    color: #f3f7f9;
   }
-  .klein-headline em {
+  .hero-headline em {
     font-style: italic;
-    /* Two separate clipping problems fixed together:
-       1) Trailing horizontal overhang of italic glyphs (f, y, s) –
-          fixed by inline-block + padding-right and a balancing
-          negative margin-right.
-       2) Descender clipping of g/y/p — display:inline-block +
-          background-clip:text makes the gradient's paint box the
-          inline-block's CONTENT box, which stops at the baseline-ish
-          when line-height is tight.  padding-bottom extends the
-          clip-box below the baseline so the descender gets its paint.
-          margin-bottom balances the extra padding so vertical rhythm
-          with the paragraph below is unchanged. */
+    /* inline-block + padding keeps the italic overhang and the g
+       descender inside the background-clip:text paint box. */
     display: inline-block;
-    padding: 0 0.22em 0.14em 0.02em;
-    margin: 0 -0.08em -0.14em 0;
-    line-height: inherit;
-    overflow: visible;
-    vertical-align: baseline;
-    background: linear-gradient(
-      120deg,
-      #8fd2ff 0%,
-      #d5a0ff 50%,
-      #ffb194 100%
-    );
+    padding: 0 0.1em 0.12em 0.02em;
+    margin: 0 -0.04em -0.12em 0;
+    background: linear-gradient(120deg, #e7f0f3 0%, #9cc2cf 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
   }
 
-  .klein-body {
-    font-size: clamp(1rem, 1.6vw, 1.2rem);
-    line-height: 1.55;
-    color: rgba(235, 240, 255, 0.82);
-    max-width: 36rem;
+  .hero-body {
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    line-height: 1.6;
+    color: rgba(216, 229, 238, 0.72);
+    max-width: 30rem;
+    margin: 0 auto;
   }
+  .hero-link {
+    color: rgba(240, 247, 250, 0.95);
+    text-decoration: none;
+    background-image: linear-gradient(
+      90deg,
+      rgba(146, 186, 200, 0.7),
+      rgba(146, 186, 200, 0.25)
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    transition: color 140ms ease;
+  }
+  .hero-link:hover { color: #ffffff; }
 
-  .klein-meta {
-    margin-top: 1.5rem;
+  .hero-actions {
+    margin-top: 2.25rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.55rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
   }
-  .klein-meta span {
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    padding: 0.3rem 0.75rem;
-    border: 1px solid rgba(220, 226, 255, 0.18);
-    border-radius: 999px;
-    color: rgba(235, 240, 255, 0.78);
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(6px);
-  }
-
-  .klein-cta {
-    margin-top: 1.75rem;
+  .hero-cta {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.75rem 1.2rem;
-    color: #0b0d18;
-    background: linear-gradient(120deg, #cfe4ff 0%, #e8d5ff 50%, #ffd9c6 100%);
-    border-radius: 999px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    padding: 0.8rem 1.4rem;
+    color: #0d1318;
+    background: #edf2f5;
+    border-radius: 0.6rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
     text-decoration: none;
-    box-shadow: 0 8px 30px -10px rgba(150, 180, 255, 0.55);
-    transition: transform 160ms ease, box-shadow 160ms ease;
+    box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.6);
+    transition: transform 180ms cubic-bezier(0.2, 0.6, 0.2, 1),
+      background 180ms ease, box-shadow 180ms ease;
   }
-  .klein-cta:hover {
+  .hero-cta:hover {
     transform: translateY(-1px);
-    box-shadow: 0 12px 32px -8px rgba(180, 200, 255, 0.65);
+    background: #ffffff;
+    box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.7);
   }
-  .klein-cta svg { width: 14px; height: 14px; }
-
-  .klein-chapter-links {
-    margin-top: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 0.75rem;
-  }
-  .klein-chapter-links a,
-  .klein-chapter-links--static > div {
-    display: block;
-    padding: 0.9rem 1rem;
-    border: 1px solid rgba(200, 214, 255, 0.18);
-    border-radius: 0.9rem;
-    color: #f2f4ff;
-    text-decoration: none;
-    background: rgba(10, 12, 24, 0.35);
-    backdrop-filter: blur(10px);
-    transition: border-color 140ms ease, background 140ms ease,
-      transform 140ms ease;
-  }
-  .klein-chapter-links a:hover {
-    border-color: rgba(220, 226, 255, 0.45);
-    background: rgba(20, 24, 48, 0.55);
-    transform: translateY(-1px);
-  }
-  .klein-chapter-links--static > div {
-    cursor: default;
-    opacity: 0.82;
-  }
-  .klein-chapter-links .k-title {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    letter-spacing: -0.01em;
-  }
-  .klein-chapter-links .k-desc {
-    display: block;
-    color: rgba(200, 214, 255, 0.7);
-    font-size: 0.85rem;
-    margin-top: 0.2rem;
-  }
-  .klein-chapter-links .k-badge {
-    display: inline-block;
-    margin-bottom: 0.5rem;
-    padding: 0.18rem 0.55rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(220, 226, 255, 0.25);
-    font-size: 0.64rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: rgba(220, 226, 255, 0.85);
-  }
-
-  /* Right-edge progress rail */
-  .klein-progress {
-    position: absolute;
-    right: clamp(1rem, 2.5vw, 2.5rem);
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    pointer-events: auto;
-    z-index: 3;
-  }
-  .klein-progress-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.22em;
-    color: rgba(200, 214, 255, 0.7);
-    font-variant-numeric: tabular-nums;
-  }
-  .klein-progress-track {
-    position: relative;
-    width: 2px;
-    height: clamp(180px, 28vh, 280px);
-    background: rgba(220, 226, 255, 0.15);
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .klein-progress-bar {
-    position: absolute;
-    inset: 0;
-    transform-origin: top center;
-    transform: scaleY(0);
-    background: linear-gradient(
-      180deg,
-      #9ec8ff 0%,
-      #d5a0ff 50%,
-      #ffb194 100%
-    );
-  }
-  .klein-step-dots {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-    margin-top: 0.3rem;
-  }
-  .klein-step-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 999px;
-    border: 1px solid rgba(220, 226, 255, 0.45);
+  .hero-cta svg { width: 14px; height: 14px; }
+  .hero-cta--ghost {
+    color: rgba(255, 255, 255, 0.85);
     background: transparent;
-    cursor: pointer;
-    transition: background 180ms ease, border-color 180ms ease,
-      transform 180ms ease;
-    padding: 0;
+    border: 1px solid rgba(196, 218, 228, 0.22);
+    box-shadow: none;
   }
-  .klein-step-dot.is-active {
-    background: #e9e5ff;
-    border-color: #ffffff;
-    transform: scale(1.2);
-    box-shadow: 0 0 12px rgba(210, 200, 255, 0.55);
+  .hero-cta--ghost:hover {
+    border-color: rgba(196, 218, 228, 0.5);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: none;
   }
 
-  /* Scroll hint that fades as user begins scrolling */
-  .klein-scroll-hint {
-    position: absolute;
-    bottom: 1.75rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.72rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: rgba(220, 226, 255, 0.55);
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    pointer-events: none;
-    z-index: 2;
+  /* Entrance: a staggered fade-rise on first paint. Compositor-only. */
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  .klein-scroll-hint .line {
-    width: 1px;
-    height: 34px;
-    background: linear-gradient(
-      180deg,
-      rgba(220, 226, 255, 0.7),
-      rgba(220, 226, 255, 0)
-    );
-    animation: klein-pulse 2.4s ease-in-out infinite;
+  .hero-headline,
+  .hero-body,
+  .hero-actions {
+    animation: hero-rise 0.9s cubic-bezier(0.2, 0.6, 0.2, 1) both;
   }
-  @keyframes klein-pulse {
-    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
-    50% { transform: scaleY(1); opacity: 1; }
-  }
-
-  /* Transition into the essays section: a soft gradient fade so the
-     black void gives way to the light blog surface. */
-  .klein-tail {
-    position: relative;
-    height: 28vh;
-    margin-top: -28vh;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      rgba(5, 6, 10, 0) 0%,
-      rgba(5, 6, 10, 0.8) 55%,
-      #fbfaf7 100%
-    );
-    z-index: 2;
-  }
+  .hero-body { animation-delay: 100ms; }
+  .hero-actions { animation-delay: 200ms; }
 
   @media (max-width: 720px) {
-    .klein-hud { padding: 1rem 1.1rem; }
-    .klein-hud-nav { display: none; }
-    .klein-chapters { padding: 0 1.1rem; }
-    .klein-progress { right: 0.6rem; }
-    .klein-progress-track { height: 180px; }
+    .hero-hud { padding: 1rem 1.1rem; }
+    .hero-hud-nav { display: none; }
+    .hero-content { padding: 4rem 1.1rem 12vh; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .klein-chapter { transition: none; }
-    .klein-scroll-hint .line { animation: none; }
+    .hero-art,
+    .hero-headline,
+    .hero-body,
+    .hero-actions {
+      animation: none;
+    }
   }
 }
 
-/* ─── Blog surface (below the Klein journey) ──────── */
+/* ─── Bay interludes & finale (home) ───────────────── */
+/* The "window" technique: the wrapper clips its own paint via
+   clip-path, and the image inside is position:fixed, so the scene
+   stays still while the page scrolls over it. Pure compositor work —
+   no scroll listeners, no JS. */
+@layer components {
+  .bay-interlude {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-top: clamp(5rem, 12vh, 9rem);
+    /* svh: stable on mobile while the browser toolbar collapses */
+    height: 88vh;
+    height: 88svh;
+    clip-path: inset(0);
+    display: grid;
+    place-items: center;
+  }
+  .bay-interlude-img {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    /* lvh: cover the largest viewport so the toolbar collapsing on
+       mobile never exposes a gap at the bottom of the scene */
+    height: 100vh;
+    height: 100lvh;
+    background-color: #070b10;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Words on the water: the copy scrolls with the page while the
+     scene behind it holds still. */
+  .bay-copy {
+    position: relative;
+    z-index: 1;
+    max-width: min(88vw, 38rem);
+    text-align: center;
+    color: #eef3f7;
+    text-shadow: 0 1px 16px rgba(7, 11, 16, 0.65);
+  }
+  .bay-eyebrow {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(205, 220, 233, 0.65);
+    margin-bottom: 1rem;
+  }
+  .bay-line {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: rgba(240, 246, 250, 0.92);
+  }
+  .bay-attrib {
+    display: block;
+    margin-top: 1.1rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(205, 220, 233, 0.6);
+  }
+
+  /* Footer-as-finale: home's footer is a tall window onto the
+     viewer's-shore image, anchored so the dock rises from below as
+     the page runs out. Other pages keep the plain light footer. */
+  .blog-footer--night {
+    position: relative;
+    clip-path: inset(0);
+    min-height: 88vh;
+    min-height: 88svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-top: 0;
+    background: transparent;
+  }
+  .bay-finale {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100lvh;
+    background-color: #070b10;
+    background-size: cover;
+    background-position: center bottom;
+  }
+
+  /* Closing words, centred in the free space above the footer row. */
+  .bay-finale-copy {
+    position: relative;
+    z-index: 2;
+    margin: auto;
+    padding: 5rem clamp(1.25rem, 4vw, 2.5rem) 3rem;
+    max-width: min(90vw, 40rem);
+    text-align: center;
+    color: #eef3f7;
+    text-shadow: 0 1px 16px rgba(7, 11, 16, 0.65);
+  }
+  .bay-finale-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2rem, 4.6vw, 3.4rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    color: #f3f7f9;
+  }
+  .bay-finale-title em {
+    font-style: italic;
+    display: inline-block;
+    padding: 0 0.1em 0.12em 0.02em;
+    margin: 0 -0.04em -0.12em 0;
+    background: linear-gradient(120deg, #e7f0f3 0%, #9cc2cf 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .bay-finale-body {
+    margin: 0;
+    font-size: clamp(0.98rem, 1.5vw, 1.1rem);
+    line-height: 1.6;
+    color: rgba(216, 229, 238, 0.75);
+  }
+  .bay-finale-body a {
+    color: rgba(240, 247, 250, 0.95);
+    text-decoration: none;
+    background-image: linear-gradient(
+      90deg,
+      rgba(146, 186, 200, 0.7),
+      rgba(146, 186, 200, 0.25)
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    transition: color 140ms ease;
+  }
+  .bay-finale-body a:hover { color: #ffffff; }
+
+  .blog-footer--night .blog-footer-inner {
+    position: relative;
+    z-index: 2;
+    color: rgba(218, 230, 240, 0.66);
+  }
+  .blog-footer--night .blog-footer-mark {
+    color: #f0f5f8;
+  }
+  .blog-footer--night .blog-footer-mark svg {
+    color: #9fb6c4;
+  }
+  .blog-footer--night .blog-footer-nav a {
+    color: rgba(222, 233, 242, 0.78);
+  }
+  .blog-footer--night .blog-footer-nav a:hover {
+    color: #ffffff;
+  }
+}
+
+/* ─── Scroll reveal (home sections) ────────────────── */
+/* The `rv` class is added by JS only when motion is allowed, so the
+   content is never hidden if JS fails or reduced-motion is set. */
+@layer components {
+  html.rv .blog-section {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+  html.rv .blog-section.is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ─── Blog surface (below the hero) ───────────────── */
 @layer components {
   .blog-surface {
     max-width: 54rem;
     margin: 0 auto;
     padding: 0 clamp(1.25rem, 4vw, 2.5rem) 6rem;
-    background: #fbfaf7;
+    background: #f6f8fa;
     color: #1a1e2b;
     font-family: var(--font-inter);
     position: relative;
@@ -539,25 +530,11 @@
     margin: 0;
     color: #0b0d18;
   }
-  /* Same italic-gradient treatment as the Klein headlines but on light. */
+  /* Same italic-gradient treatment as the hero headline but on light. */
   .blog-em {
     font-style: italic;
-    display: inline-block;
-    padding: 0 0.22em 0.14em 0.02em;
-    margin: 0 -0.08em -0.14em 0;
-    line-height: inherit;
-    overflow: visible;
-    vertical-align: baseline;
-    background: linear-gradient(
-      120deg,
-      #4a7ad9 0%,
-      #9b5cd6 55%,
-      #e07a84 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    color: #7e93a0;
+    padding-right: 0.06em; /* italic overhang breathing room */
   }
   .blog-section-sub {
     margin-top: 1rem;
@@ -579,7 +556,7 @@
   }
 
   .blog-link {
-    color: #2f4bbd;
+    color: #2b6777;
     text-decoration: none;
     background-image: linear-gradient(currentColor, currentColor);
     background-repeat: no-repeat;
@@ -588,7 +565,7 @@
     transition: color 140ms ease, background-size 140ms ease;
   }
   .blog-link:hover {
-    color: #13204f;
+    color: #1b4a55;
     background-size: 100% 2px;
   }
 
@@ -630,6 +607,105 @@
     box-shadow: 0 0 0 3px rgba(255, 122, 26, 0.18);
   }
 
+  /* "Featured on" press/creator logo strip */
+  .blog-featured {
+    margin-top: 2.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(20, 24, 48, 0.08);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem 1.75rem;
+  }
+  .blog-featured-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: #9aa0b4;
+    flex-shrink: 0;
+  }
+  .blog-featured-logos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.75rem;
+  }
+  .featured-logo {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    color: #7c8296;
+    text-decoration: none;
+    line-height: 1;
+    transition: color 140ms ease, opacity 140ms ease;
+    opacity: 0.85;
+  }
+  .featured-logo:hover {
+    opacity: 1;
+  }
+  /* Each wordmark approximates the outlet's identity in type. */
+  .featured-logo--techcrunch {
+    font-family: var(--font-inter);
+    font-weight: 800;
+    font-size: 1.02rem;
+    letter-spacing: -0.04em;
+  }
+  .featured-logo--techcrunch:hover { color: #0b0d18; }
+  .featured-logo--forbes {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.08rem;
+    letter-spacing: 0.01em;
+  }
+  .featured-logo--forbes:hover { color: #0b0d18; }
+  .featured-logo--yahoo {
+    font-family: var(--font-inter);
+    font-weight: 800;
+    font-size: 1.02rem;
+    letter-spacing: -0.03em;
+    text-transform: lowercase;
+    gap: 0.04em;
+  }
+  .featured-logo--yahoo:hover { color: #0b0d18; }
+  .featured-logo--yahoo .featured-logo-bang {
+    font-style: italic;
+  }
+  .featured-logo--tbpn {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.14em;
+  }
+  .featured-logo--tbpn:hover { color: #0b0d18; }
+  .featured-logo--fireship {
+    font-family: var(--font-inter);
+    font-weight: 700;
+    font-size: 0.98rem;
+    letter-spacing: -0.01em;
+    align-items: center;
+  }
+  .featured-logo--fireship svg {
+    width: 15px;
+    height: 15px;
+    transform: translateY(-1px);
+  }
+  .featured-logo--fireship:hover { color: #0b0d18; }
+  .featured-logo--t3 {
+    font-family: var(--font-inter);
+    font-weight: 800;
+    font-style: italic;
+    font-size: 1.02rem;
+    letter-spacing: -0.02em;
+    gap: 0.04em;
+  }
+  .featured-logo--t3 .featured-logo-gg {
+    font-weight: 500;
+    font-style: normal;
+    font-size: 0.8em;
+    opacity: 0.7;
+  }
+  .featured-logo--t3:hover { color: #0b0d18; }
+
   /* Essay list */
   .blog-entries {
     list-style: none;
@@ -658,11 +734,11 @@
     background: rgba(20, 24, 48, 0.03);
   }
   a.blog-entry-link:hover .blog-entry-title {
-    color: #2f4bbd;
+    color: #2b6777;
   }
   a.blog-entry-link:hover .blog-entry-arrow {
     transform: translate(3px, -3px);
-    color: #2f4bbd;
+    color: #2b6777;
   }
   .blog-entry.is-draft .blog-entry-link {
     cursor: default;
@@ -711,6 +787,36 @@
     color: #9aa0b4;
     padding-top: 0.45rem;
     transition: transform 140ms ease, color 140ms ease;
+  }
+
+  /* Press rows: the outlet wordmark replaces the numeric index. */
+  .press-entry-link {
+    grid-template-columns: 7.5rem 1fr auto;
+  }
+  .press-outlet {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.92rem;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    color: #3b405a;
+    padding-top: 0.45rem;
+  }
+  a.press-entry-link:hover .press-outlet {
+    color: #2b6777;
+  }
+  @media (max-width: 640px) {
+    .press-entry-link {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+    }
+    .press-outlet {
+      padding-top: 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #6b7080;
+    }
   }
 
   .blog-tag {
@@ -784,7 +890,7 @@
 
   /* Footer */
   .blog-footer {
-    background: #fbfaf7;
+    background: #f6f8fa;
     border-top: 1px solid rgba(20, 24, 48, 0.08);
     position: relative;
     z-index: 3;
@@ -853,7 +959,7 @@
     margin: 0 auto;
     padding: clamp(4rem, 8vh, 6rem) clamp(1.25rem, 4vw, 2rem) 5rem;
     color: #1a1e2b;
-    background: #fbfaf7;
+    background: #f6f8fa;
   }
   .post-back {
     display: inline-flex;
@@ -905,8 +1011,8 @@
   }
   .post-body h2 { font-size: 1.55rem; }
   .post-body h3 { font-size: 1.25rem; }
-  .post-body a { color: #2f4bbd; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  .post-body a:hover { color: #13204f; }
+  .post-body a { color: #2b6777; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .post-body a:hover { color: #1b4a55; }
   .post-body code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.92em;
@@ -1012,11 +1118,11 @@
   .media-card-thumb--empty {
     background-image: linear-gradient(
       120deg,
-      rgba(74, 122, 217, 0.15),
-      rgba(155, 92, 214, 0.15) 50%,
-      rgba(224, 122, 132, 0.15)
+      rgba(20, 24, 48, 0.07),
+      rgba(20, 24, 48, 0.03) 50%,
+      rgba(20, 24, 48, 0.06)
     );
-    background-color: #fbfaf7;
+    background-color: #f6f8fa;
   }
   .media-card-play {
     position: absolute;
@@ -1065,8 +1171,8 @@
     font-size: 0.66rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #2f4bbd;
-    background: rgba(47, 75, 189, 0.09);
+    color: #2b6777;
+    background: rgba(43, 103, 119, 0.1);
     border-radius: 999px;
   }
   .media-card-title {
@@ -1154,7 +1260,7 @@
 
 /* ─── Media post shell ────────────────────────────── */
 @layer components {
-  .media-shell { background: #fbfaf7; }
+  .media-shell { background: #f6f8fa; }
   .media-page {
     max-width: 46rem;
     margin: 0 auto;
@@ -1170,8 +1276,8 @@
     font-size: 0.68rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #2f4bbd;
-    background: rgba(47, 75, 189, 0.08);
+    color: #2b6777;
+    background: rgba(20, 24, 48, 0.06);
     border-radius: 999px;
     margin-bottom: 0.9rem;
   }
@@ -1338,7 +1444,7 @@
     font-variant-numeric: tabular-nums;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.85rem;
-    color: #2f4bbd;
+    color: #2b6777;
   }
   .media-chapter-label {
     font-family: var(--font-display);
@@ -1356,15 +1462,15 @@
     gap: 0.5rem;
     font-size: 0.88rem;
     letter-spacing: 0.02em;
-    color: #2f4bbd;
+    color: #2b6777;
     text-decoration: none;
-    border-bottom: 1px solid rgba(47, 75, 189, 0.35);
+    border-bottom: 1px solid rgba(43, 103, 119, 0.35);
     padding-bottom: 1px;
     transition: color 140ms ease, border-color 140ms ease;
   }
   .media-external-link:hover {
-    color: #13204f;
-    border-color: #13204f;
+    color: #1b4a55;
+    border-color: #1b4a55;
   }
 
   .media-tags {
@@ -1380,8 +1486,8 @@
   }
 }
 
-/* Make sure the whole page carries the warmer off-white base. */
-body { background: #fbfaf7; }
+/* Make sure the whole page carries the cool fog-white base. */
+body { background: #f6f8fa; }
 
 /* ─── Archive CTA card on home ──────────────────── */
 @layer components {
@@ -1396,9 +1502,9 @@ body { background: #fbfaf7; }
     text-decoration: none;
     background: linear-gradient(
       120deg,
-      rgba(74, 122, 217, 0.08) 0%,
-      rgba(155, 92, 214, 0.08) 50%,
-      rgba(224, 122, 132, 0.08) 100%
+      rgba(20, 24, 48, 0.045) 0%,
+      rgba(20, 24, 48, 0.02) 50%,
+      rgba(20, 24, 48, 0.04) 100%
     );
     border: 1px solid rgba(20, 24, 48, 0.1);
     border-radius: 1rem;
@@ -1412,7 +1518,7 @@ body { background: #fbfaf7; }
   }
   .blog-archive-cta:hover .blog-archive-cta-arrow {
     transform: translateX(4px);
-    color: #2f4bbd;
+    color: #2b6777;
   }
   .blog-archive-cta--subtle {
     background: transparent;
@@ -1451,7 +1557,7 @@ body { background: #fbfaf7; }
 
 /* ─── Archive page ──────────────────────────────── */
 @layer components {
-  .archive-shell { background: #fbfaf7; }
+  .archive-shell { background: #f6f8fa; }
   .archive-page {
     max-width: 54rem;
     margin: 0 auto;
@@ -1497,8 +1603,8 @@ body { background: #fbfaf7; }
     transition: border-color 140ms ease, box-shadow 140ms ease;
   }
   .archive-search:focus-within {
-    border-color: #2f4bbd;
-    box-shadow: 0 0 0 4px rgba(47, 75, 189, 0.12);
+    border-color: #2b6777;
+    box-shadow: 0 0 0 4px rgba(43, 103, 119, 0.14);
   }
   .archive-search svg {
     width: 16px;
@@ -1604,50 +1710,9 @@ body { background: #fbfaf7; }
     font-size: 0.68rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #2f4bbd;
-    background: rgba(47, 75, 189, 0.08);
+    color: #2b6777;
+    background: rgba(43, 103, 119, 0.1);
     border-radius: 999px;
   }
-}
-
-/* ─── WebGL low-power / unsupported fallback ─────── */
-@layer components {
-  .klein-fallback {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-        ellipse at 50% 45%,
-        #1a1240 0%,
-        #0d0a24 55%,
-        #05070e 100%
-      );
-    overflow: hidden;
-  }
-  .klein-fallback::after {
-    content: "";
-    position: absolute;
-    inset: -10%;
-    background: radial-gradient(
-        circle at 30% 32%,
-        rgba(170, 210, 255, 0.22) 0%,
-        rgba(170, 210, 255, 0) 42%
-      ),
-      radial-gradient(
-        circle at 70% 60%,
-        rgba(255, 175, 190, 0.18) 0%,
-        rgba(255, 175, 190, 0) 40%
-      );
-  }
-  .klein-fallback-infinity {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: clamp(280px, 55vw, 620px);
-    transform: translate(-50%, -50%);
-    filter: drop-shadow(0 8px 30px rgba(120, 80, 255, 0.22));
-    opacity: 0.75;
-  }
-  /* Hide the scroll hint and vignette extras that assume a live canvas. */
-  .klein-journey.is-fallback .klein-scroll-hint { opacity: 0.35; }
 }
 

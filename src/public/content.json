@@ -199,6 +199,61 @@
       "featured": true
     }
   ],
+  "press": [
+    {
+      "id": "forbes-yc-f25-startups",
+      "outlet": "Forbes",
+      "title": "The Top Startups To Watch From Y Combinator's Fall 2025 Batch",
+      "description": "Clad Labs named among the standout startups of YC's Fall 2025 batch.",
+      "date": "2025-11-13",
+      "dateLabel": "Nov 13, 2025",
+      "href": "https://www.forbes.com/sites/dariashunina/2025/11/13/the-top-startups-to-watch-from-y-combinators-fall-2025-batch/",
+      "tags": ["YC", "Clad Labs"],
+      "featured": true
+    },
+    {
+      "id": "techcrunch-chad-launch",
+      "outlet": "TechCrunch",
+      "title": "Chad: The Brainrot IDE is a new Y Combinator-backed product so wild, people thought it was fake",
+      "description": "The launch story — why the internet thought Chad was a prank, and why it isn't.",
+      "date": "2025-11-12",
+      "dateLabel": "Nov 12, 2025",
+      "href": "https://techcrunch.com/2025/11/12/chad-the-brainrot-ide-is-a-new-y-combinator-backed-product-so-wild-people-thought-it-was-fake/",
+      "tags": ["Chad IDE", "Launch"],
+      "featured": true
+    },
+    {
+      "id": "yahoo-chad-profile",
+      "outlet": "Yahoo Tech",
+      "title": "Meet 'Chad: The Brainrot IDE' — the product people dismissed as a prank is solving a problem 'nobody's talking about'",
+      "description": "Benzinga's profile of Chad and the idle-time problem in AI-assisted coding, on Yahoo Tech.",
+      "date": "2025-11-15",
+      "dateLabel": "Nov 2025",
+      "href": "https://tech.yahoo.com/computing/articles/meet-chad-brainrot-ide-product-180116591.html",
+      "tags": ["Chad IDE"],
+      "featured": true
+    },
+    {
+      "id": "futurism-chad",
+      "outlet": "Futurism",
+      "title": "New development environment for programmers rewards them with brainrot when they prompt the AI",
+      "description": "Futurism's (gleefully skeptical) take on the brainrot IDE.",
+      "date": "2025-11-14",
+      "dateLabel": "Nov 2025",
+      "href": "https://futurism.com/artificial-intelligence/ycombinator-chad-brainrot-startup",
+      "tags": ["Chad IDE"]
+    },
+    {
+      "id": "techbuzz-chad",
+      "outlet": "The Tech Buzz",
+      "title": "Y Combinator backs 'Chad IDE' that lets devs gamble while coding",
+      "description": "\"Silicon Valley just proved it's impossible to parody anymore.\"",
+      "date": "2025-11-13",
+      "dateLabel": "Nov 13, 2025",
+      "href": "https://www.techbuzz.ai/articles/y-combinator-backs-chad-ide-that-lets-devs-gamble-while-coding",
+      "tags": ["Chad IDE"]
+    }
+  ],
   "notes": [
     {
       "id": "launching-clad-labs",

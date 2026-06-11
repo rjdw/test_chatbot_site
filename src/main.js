@@ -1,15 +1,3 @@
-// Defer the chat widget until the browser is idle post-first-paint.
-// It pulls in marked + DOMPurify + axios + Tailwind-in-shadow-DOM, all
-// non-critical. Loading it inline on main.js caused ~200 ms of JS parse
-// on first load that was competing with the Klein journey's WebGL
-// bootstrap.
-const loadChatWhenIdle = () => import("./chat/widget-loader.js");
-if ("requestIdleCallback" in window) {
-  window.requestIdleCallback(loadChatWhenIdle, { timeout: 3000 });
-} else {
-  setTimeout(loadChatWhenIdle, 1500);
-}
-
 // ────────────────────────────────────────────────────────────
 // Home notes preview (populated from /content.json)
 // ────────────────────────────────────────────────────────────
@@ -183,6 +171,44 @@ function probeThumbnails(root) {
   });
 }
 
+async function renderHomePress() {
+  const host = document.getElementById("home-press-list");
+  if (!host) return;
+  const data = await loadContent();
+  const all = data.press || [];
+  if (all.length === 0) return;
+  // Home shows only the headline coverage; the full list lives in the
+  // archive under /writing?kind=press.
+  const featured = all.filter((p) => p.featured);
+  const press = featured.length > 0 ? featured : all.slice(0, 3);
+  host.innerHTML = press
+    .map(
+      (p) => `
+    <li class="blog-entry">
+      <a class="blog-entry-link press-entry-link" href="${attr(p.href || "#")}" target="_blank" rel="noopener">
+        <span class="press-outlet">${escapeHtml(p.outlet || "")}</span>
+        <div class="blog-entry-body">
+          <h3 class="blog-entry-title">${escapeHtml(p.title || "")}</h3>
+          ${
+            p.description
+              ? `<p class="blog-entry-desc">${escapeHtml(p.description)}</p>`
+              : ""
+          }
+          <div class="blog-entry-meta">
+            ${p.dateLabel ? `<span>${escapeHtml(p.dateLabel)}</span>` : ""}
+            ${(p.tags || [])
+              .slice(0, 2)
+              .map((t) => `<span class="blog-tag">${escapeHtml(t)}</span>`)
+              .join("")}
+          </div>
+        </div>
+        <span class="blog-entry-arrow" aria-hidden="true">↗</span>
+      </a>
+    </li>`
+    )
+    .join("");
+}
+
 async function renderHomeNotes() {
   const host = document.getElementById("home-notes-list");
   if (!host) return;
@@ -263,94 +289,6 @@ function attr(s) {
   return escapeHtml(s);
 }
 
-// ────────────────────────────────────────────────────────────
-// Klein journey bootstrap with WebGL fallback + dynamic import
-// ────────────────────────────────────────────────────────────
-
-function supportsWebGL() {
-  try {
-    const c = document.createElement("canvas");
-    return !!(
-      c.getContext("webgl2") ||
-      c.getContext("webgl") ||
-      c.getContext("experimental-webgl")
-    );
-  } catch {
-    return false;
-  }
-}
-
-function isLowPower() {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
-  // Coarse heuristic: low device memory or very low hardware concurrency.
-  const mem = navigator.deviceMemory || 8;
-  const cpu = navigator.hardwareConcurrency || 8;
-  if (mem && mem <= 1) return true;
-  if (cpu && cpu <= 2) return true;
-  return false;
-}
-
-function renderFallback(root) {
-  const canvas = root.querySelector(".klein-canvas");
-  if (canvas) canvas.remove();
-  // Swap in a static visual: radial gradient + a large SVG infinity.
-  const bg = document.createElement("div");
-  bg.className = "klein-fallback";
-  bg.setAttribute("aria-hidden", "true");
-  bg.innerHTML = `
-    <svg class="klein-fallback-infinity" viewBox="-60 -20 120 40" aria-hidden="true">
-      <defs>
-        <linearGradient id="k-fg" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%"  stop-color="#8fd2ff"/>
-          <stop offset="55%" stop-color="#d5a0ff"/>
-          <stop offset="100%" stop-color="#ffb194"/>
-        </linearGradient>
-      </defs>
-      <path
-        fill="none"
-        stroke="url(#k-fg)"
-        stroke-width="1.1"
-        stroke-linecap="round"
-        d="
-          M -45 0
-          C -45 -18, -15 -18, 0 0
-          C 15 18, 45 18, 45 0
-          C 45 -18, 15 -18, 0 0
-          C -15 18, -45 18, -45 0 Z"
-      />
-    </svg>`;
-  const stage = root.querySelector(".klein-stage");
-  if (stage) stage.prepend(bg);
-  root.classList.add("is-fallback");
-}
-
-async function bootKlein() {
-  const root = document.getElementById("klein-journey");
-  if (!root) return;
-
-  if (!supportsWebGL() || isLowPower()) {
-    renderFallback(root);
-    // Still wire up chapter cross-fade + snap so scrolling works.
-    try {
-      const { initKleinJourney } = await import(
-        /* webpackChunkName: "klein" */ "./klein/klein-journey-lite.js"
-      );
-      initKleinJourney(root);
-    } catch {
-      /* lite may not exist; non-fatal */
-    }
-    return;
-  }
-
-  try {
-    const { initKleinJourney } = await import("./klein/klein-journey.js");
-    initKleinJourney(root);
-  } catch (err) {
-    console.warn("[klein] WebGL journey failed to load, falling back", err);
-    renderFallback(root);
-  }
-}
-
 async function bootArchiveIfPresent() {
   const list = document.getElementById("archive-list");
   if (!list) return;
@@ -398,10 +336,41 @@ function relabelBackLinks() {
   });
 }
 
+// ────────────────────────────────────────────────────────────
+// Scroll reveal: fade-rise home sections as they enter the
+// viewport. Class-gated on <html> so content is never hidden when
+// JS fails or the user prefers reduced motion.
+// ────────────────────────────────────────────────────────────
+
+let _revealIo = null;
+function initReveals() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const sections = document.querySelectorAll(".blog-section");
+  if (sections.length === 0) return;
+  document.documentElement.classList.add("rv");
+  if (!_revealIo) {
+    _revealIo = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            _revealIo.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -8% 0px" }
+    );
+  }
+  sections.forEach((el) => {
+    if (!el.classList.contains("is-in")) _revealIo.observe(el);
+  });
+}
+
 function boot() {
-  bootKlein();
+  initReveals();
   renderHomeEssays();
   renderHomeMedia();
+  renderHomePress();
   renderHomeNotes();
   bootArchiveIfPresent();
   bootMediaIfPresent();
@@ -411,8 +380,10 @@ function boot() {
 // Re-run the lightweight hooks after PJAX navigations too.
 document.addEventListener("pjax:navigated", () => {
   _contentCache = null; // allow fresh data on nav
+  initReveals();
   renderHomeEssays();
   renderHomeMedia();
+  renderHomePress();
   renderHomeNotes();
   bootArchiveIfPresent();
   bootMediaIfPresent();

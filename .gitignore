@@ -13,13 +13,19 @@ pnpm-lock.yaml
 package-lock.json
 .DS_Store
 
-# ─── Vite build output ────────────────────────────────
-public/assets/*
-!public/assets/ads.txt        # keep static compliance files
-!public/assets/robots.txt
+# ─── Build output ─────────────────────────────────────
+# /public is fully generated: `npm run build` rebuilds every file in it
+# (vite bundles + copies src/public/* verbatim, incl. _redirects).
+# Committing it caused permanent dirty-tree / merge-conflict pain.
+# NOTE: root-anchored on purpose — src/public/ is source and IS tracked.
+/public/
 
-# If you sometimes bundle HTML into public/ as well, ignore hashed copies:
-public/index-*.html
+# Generated post/media HTML and sitemap (scripts/build-posts.js writes
+# these from src/posts/*.md and src/public/content.json before vite runs).
+src/posts/*.html
+!src/posts/_template.html
+src/media/*.html
+src/public/sitemap.xml
 
 # ─── Tailwind/JIT cache ───────────────────────────────
 .tailwind-cache/

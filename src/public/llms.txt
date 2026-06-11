@@ -1,0 +1,49 @@
+# Richard Wang
+
+> Personal site of Richard Wang — machine learning engineer in San Francisco
+> and co-founder & CEO of Clad Labs (Y Combinator F25). Essays on applied AI
+> and infrastructure, notes and updates, media appearances, and press
+> coverage of Chad: the Brainrot IDE.
+
+Richard Wang is the co-founder & CEO of Clad Labs (https://cladlabs.ai),
+the YC F25 startup behind "Chad: The Brainrot IDE" — an AI coding
+environment that keeps developers inside the IDE during model inference.
+Before Clad Labs he did ML research on semiconductor-fab time series at a
+startup acquired by Tokyo Electron (patent filing, SEMICON 2025 talk), and
+studied Computer Science at Caltech, where he played point guard on the
+basketball team. Regeneron Scholar; high-school national chess champion
+(team).
+
+## Main pages
+
+- [Home](https://richardjdwang.com/): About, selected essays, media
+  appearances, press, notes, and FAQ.
+- [Writing archive](https://richardjdwang.com/writing): Searchable,
+  filterable index of all essays, notes, media, and press.
+
+## Essays
+
+- [What is agentic customer support?](https://www.useclad.ai/blog/agentic-customer-support)
+- [How AI is transforming code review](https://www.cladlabs.ai/blog/ai-code-review)
+- [Advanced context management for code generation](https://www.cladlabs.ai/blog/intelligent-code-completion)
+- [Modern Noir — Chapter 1 (fiction)](https://richardjdwang.com/posts/driving_chp1.html)
+- [Petrarchan love & Eve's dream of Satan](https://richardjdwang.com/posts/paradise_lost_petrarch.html)
+
+## Press
+
+- [Forbes — The Top Startups To Watch From Y Combinator's Fall 2025 Batch](https://www.forbes.com/sites/dariashunina/2025/11/13/the-top-startups-to-watch-from-y-combinators-fall-2025-batch/)
+- [TechCrunch — Chad: The Brainrot IDE launch story](https://techcrunch.com/2025/11/12/chad-the-brainrot-ide-is-a-new-y-combinator-backed-product-so-wild-people-thought-it-was-fake/)
+- [Yahoo Tech — Meet 'Chad: The Brainrot IDE'](https://tech.yahoo.com/computing/articles/meet-chad-brainrot-ide-product-180116591.html)
+
+## Media
+
+- [TBPN — YC Demo Day with Paul Graham](https://richardjdwang.com/media/tbpn-yc-demo-day-dec-2025)
+- [Fondo START — pivoting to Chad IDE](https://richardjdwang.com/media/fondo-start-dec-2025)
+- [Signal Line — Building a Brain Rot IDE](https://richardjdwang.com/media/signal-line-imagineai-nov-2025)
+
+## Contact
+
+- LinkedIn: https://www.linkedin.com/in/richard-wang-39554994/
+- X / Twitter: https://x.com/zzzbuggg
+- GitHub: https://github.com/rjdw
+- Company: https://cladlabs.ai

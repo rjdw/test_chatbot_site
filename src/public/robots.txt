@@ -1,0 +1,6 @@
+# richardjdwang.com — all crawlers welcome, including AI/LLM agents
+# (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, etc.)
+User-agent: *
+Allow: /
+
+Sitemap: https://richardjdwang.com/sitemap.xml
