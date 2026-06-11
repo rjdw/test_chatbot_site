@@ -14,10 +14,11 @@ package-lock.json
 .DS_Store
 
 # ─── Build output ─────────────────────────────────────
-# public/ is fully generated: `npm run build` rebuilds every file in it
+# /public is fully generated: `npm run build` rebuilds every file in it
 # (vite bundles + copies src/public/* verbatim, incl. _redirects).
 # Committing it caused permanent dirty-tree / merge-conflict pain.
-public/
+# NOTE: root-anchored on purpose — src/public/ is source and IS tracked.
+/public/
 
 # Generated post/media HTML (scripts/build-posts.js writes these from
 # src/posts/*.md and src/public/content.json before vite runs).
