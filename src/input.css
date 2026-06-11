@@ -305,9 +305,10 @@
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-top: clamp(5rem, 12vh, 9rem);
-    height: 64vh;
+    height: 88vh;
     clip-path: inset(0);
-    pointer-events: none;
+    display: grid;
+    place-items: center;
   }
   .bay-interlude-img {
     position: fixed;
@@ -319,23 +320,34 @@
     background-size: cover;
     background-position: center;
   }
-  /* Feather the band into the fog-white page above and below. */
-  .bay-interlude::before,
-  .bay-interlude::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 18%;
+
+  /* Words on the water: the copy scrolls with the page while the
+     scene behind it holds still. */
+  .bay-copy {
+    position: relative;
     z-index: 1;
+    max-width: min(88vw, 38rem);
+    text-align: center;
+    color: #eef3f7;
+    text-shadow: 0 1px 16px rgba(7, 11, 16, 0.65);
   }
-  .bay-interlude::before {
-    top: 0;
-    background: linear-gradient(180deg, #f6f8fa, rgba(246, 248, 250, 0));
+  .bay-eyebrow {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(205, 220, 233, 0.65);
+    margin-bottom: 1rem;
   }
-  .bay-interlude::after {
-    bottom: 0;
-    background: linear-gradient(0deg, #f6f8fa, rgba(246, 248, 250, 0));
+  .bay-line {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: rgba(240, 246, 250, 0.92);
   }
 
   /* Footer-as-finale: home's footer is a tall window onto the
@@ -344,7 +356,7 @@
   .blog-footer--night {
     position: relative;
     clip-path: inset(0);
-    min-height: 82vh;
+    min-height: 88vh;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -361,16 +373,59 @@
     background-size: cover;
     background-position: center bottom;
   }
-  .blog-footer--night::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 22%;
-    z-index: 1;
-    background: linear-gradient(180deg, #f6f8fa, rgba(246, 248, 250, 0));
+
+  /* Closing words, centred in the free space above the footer row. */
+  .bay-finale-copy {
+    position: relative;
+    z-index: 2;
+    margin: auto;
+    padding: 5rem clamp(1.25rem, 4vw, 2.5rem) 3rem;
+    max-width: min(90vw, 40rem);
+    text-align: center;
+    color: #eef3f7;
+    text-shadow: 0 1px 16px rgba(7, 11, 16, 0.65);
   }
+  .bay-finale-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2rem, 4.6vw, 3.4rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    color: #f3f7f9;
+  }
+  .bay-finale-title em {
+    font-style: italic;
+    display: inline-block;
+    padding: 0 0.1em 0.12em 0.02em;
+    margin: 0 -0.04em -0.12em 0;
+    background: linear-gradient(120deg, #e7f0f3 0%, #9cc2cf 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .bay-finale-body {
+    margin: 0;
+    font-size: clamp(0.98rem, 1.5vw, 1.1rem);
+    line-height: 1.6;
+    color: rgba(216, 229, 238, 0.75);
+  }
+  .bay-finale-body a {
+    color: rgba(240, 247, 250, 0.95);
+    text-decoration: none;
+    background-image: linear-gradient(
+      90deg,
+      rgba(146, 186, 200, 0.7),
+      rgba(146, 186, 200, 0.25)
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    transition: color 140ms ease;
+  }
+  .bay-finale-body a:hover { color: #ffffff; }
+
   .blog-footer--night .blog-footer-inner {
     position: relative;
     z-index: 2;
