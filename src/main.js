@@ -336,7 +336,38 @@ function relabelBackLinks() {
   });
 }
 
+// ────────────────────────────────────────────────────────────
+// Scroll reveal: fade-rise home sections as they enter the
+// viewport. Class-gated on <html> so content is never hidden when
+// JS fails or the user prefers reduced motion.
+// ────────────────────────────────────────────────────────────
+
+let _revealIo = null;
+function initReveals() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const sections = document.querySelectorAll(".blog-section");
+  if (sections.length === 0) return;
+  document.documentElement.classList.add("rv");
+  if (!_revealIo) {
+    _revealIo = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            _revealIo.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -8% 0px" }
+    );
+  }
+  sections.forEach((el) => {
+    if (!el.classList.contains("is-in")) _revealIo.observe(el);
+  });
+}
+
 function boot() {
+  initReveals();
   renderHomeEssays();
   renderHomeMedia();
   renderHomePress();
@@ -349,6 +380,7 @@ function boot() {
 // Re-run the lightweight hooks after PJAX navigations too.
 document.addEventListener("pjax:navigated", () => {
   _contentCache = null; // allow fresh data on nav
+  initReveals();
   renderHomeEssays();
   renderHomeMedia();
   renderHomePress();
